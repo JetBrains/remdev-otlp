@@ -1,0 +1,17 @@
+<idea-plugin>
+    <extensionPoints>
+        <extensionPoint name="allowedMetricsProvider"
+                        interface="com.jetbrains.otp.exporter.AllowedMetricsProvider"
+                        dynamic="true"/>
+    </extensionPoints>
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.jetbrains.otp.exception.handler.ErrorToSpanHandlerActivationActivity"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.jetbrains.otp.diagnostic">
+        <allowedMetricsProvider implementation="com.jetbrains.otp.exporter.HardcodedListAllowedMetricsProvider"/>
+    </extensions>
+    <applicationListeners>
+        <listener class="com.jetbrains.otp.exporter.TelemetrySpanExporter"
+                  topic="com.intellij.platform.diagnostic.telemetry.impl.TelemetryReceivedListener"/>
+    </applicationListeners>
+</idea-plugin>

@@ -1,0 +1,22 @@
+[versions]
+ij-gradle-plugin = "2.10.5"
+ij-rpc-plugin = "2.2.0-0.1"
+ij-kotlin-jvm-plugin = "2.2.0"
+ij-kotlin-serialization-plugin = "2.2.0"
+ij-platform = "2025.3"
+compose-multiplatform = "1.7.1"
+opentelemetry = "1.44.1"
+opentelemetry-alpha = "1.44.1-alpha"
+
+[libraries]
+intellij-platform-gradle = { module = "org.jetbrains.intellij.platform:intellij-platform-gradle-plugin", version.ref = "ij-gradle-plugin" }
+rpc-gradle = { module = "rpc:rpc.gradle.plugin", version.ref = "ij-rpc-plugin" }
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "ij-kotlin-jvm-plugin" }
+kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "ij-kotlin-serialization-plugin" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
+opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp", version.ref = "opentelemetry" }
+opentelemetry-sdk = { module = "io.opentelemetry:opentelemetry-sdk", version.ref = "opentelemetry" }
+
+[plugins]
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ij-kotlin-jvm-plugin" }

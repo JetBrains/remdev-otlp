@@ -1,0 +1,30 @@
+<idea-plugin>
+    <id>com.jetbrains.otp.diagnostic</id>
+    <name>OpenTelemetry Diagnostic</name>
+    <vendor>JetBrains</vendor>
+    <version>1.0.0</version>
+
+    <description><![CDATA[
+        Advanced diagnostic plugin for IntelliJ Platform with OpenTelemetry integration.
+
+        Features:
+        <ul>
+            <li>Export telemetry spans to Honeycomb via OTLP</li>
+            <li>Track exceptions with OpenTelemetry spans</li>
+            <li>Monitor frontend and backend metrics separately</li>
+            <li>Support for remote development diagnostics</li>
+        </ul>
+
+        Configuration:
+        <ul>
+            <li>Set HONEYCOMB_API_KEY environment variable or honeycomb.api.key system property</li>
+            <li>Optional: Set HONEYCOMB_DATASET environment variable (default: intellij-plugin)</li>
+        </ul>
+    ]]></description>
+
+    <content>
+        <module name="OtpDiagnostic.shared"/>
+        <module name="OtpDiagnostic.frontend"/>
+        <module name="OtpDiagnostic.backend"/>
+    </content>
+</idea-plugin>

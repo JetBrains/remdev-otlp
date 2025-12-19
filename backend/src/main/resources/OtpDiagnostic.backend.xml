@@ -1,0 +1,11 @@
+<idea-plugin>
+    <dependencies>
+        <module name="intellij.platform.backend"/>
+        <module name="intellij.platform.kernel.backend"/>
+        <module name="OtpDiagnostic.shared"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <openTelemetryExporterProvider implementation="com.jetbrains.otp.exporter.BackendMetricExporter"/>
+    </extensions>
+</idea-plugin>
