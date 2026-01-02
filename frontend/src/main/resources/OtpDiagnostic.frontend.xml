@@ -3,6 +3,12 @@
         <module name="intellij.platform.frontend"/>
         <module name="OtpDiagnostic.shared"/>
     </dependencies>
+
+    <applicationListeners>
+        <listener topic="com.jetbrains.rdclient.connection.ClientSessionListener"
+                  class="com.jetbrains.otp.connection.ClientSessionSpanUpdater"/>
+    </applicationListeners>
+
     <extensions defaultExtensionNs="com.intellij">
         <openTelemetryExporterProvider implementation="com.jetbrains.otp.exporter.FrontendMetricExporter"/>
         <diagnostic.freezeNotifier implementation="com.jetbrains.otp.freeze.OtpFreezeNotifier"/>
