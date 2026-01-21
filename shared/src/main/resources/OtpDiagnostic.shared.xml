@@ -12,7 +12,9 @@
         <allowedMetricsProvider implementation="com.jetbrains.otp.exporter.HardcodedListAllowedMetricsProvider"/>
     </extensions>
     <applicationListeners>
-        <listener class="com.jetbrains.otp.exporter.TelemetrySpanExporter"
+        <listener class="com.jetbrains.otp.exporter.SpansReceivedListener"
                   topic="com.intellij.platform.diagnostic.telemetry.impl.TelemetryReceivedListener"/>
+        <listener class="com.jetbrains.otp.exporter.ClientSessionSpanListener"
+                  topic="com.jetbrains.otp.span.SessionSpanListener"/>
     </applicationListeners>
 </idea-plugin>

@@ -1,25 +1,30 @@
 package com.jetbrains.otp.exporter
 
+import com.intellij.application.subscribe
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.platform.diagnostic.telemetry.impl.TelemetryReceivedListener
 import com.jetbrains.otp.settings.SpanFilterService
+import com.jetbrains.otp.span.SessionSpanListener
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 
-@Suppress("UnstableApiUsage")
-class TelemetrySpanExporter : TelemetryReceivedListener {
+@Service(Service.Level.APP)
+class TelemetrySpanExporter {
     private val spanExporter: SpanExporter? by lazy { OtlpSpanExporterFactory.create() }
     @Volatile
     private var isSessionInitialized = false
     private val bufferedSpans = CopyOnWriteArrayList<SpanData>()
 
-    override fun sendSpans(spanData: Collection<SpanData>) {
+    fun sendSpans(spanData: Collection<SpanData>) {
         exportSpans(spanData)
     }
 
-    fun onSessionInitialized() {
+    fun sessionSpanInitialized(spanId: String, traceId: String) {
         val spansToFlush = synchronized(this) {
             if (isSessionInitialized) {
                 LOG.debug("Session already initialized, ignoring duplicate call")
@@ -85,5 +90,6 @@ class TelemetrySpanExporter : TelemetryReceivedListener {
 
     companion object {
         private val LOG = Logger.getInstance(TelemetrySpanExporter::class.java)
+        fun getInstance(): TelemetrySpanExporter = service()
     }
 }
