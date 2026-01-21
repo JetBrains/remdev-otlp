@@ -8,18 +8,20 @@ import io.opentelemetry.api.trace.SpanContext
 import io.opentelemetry.api.trace.TraceFlags
 import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
+import io.opentelemetry.sdk.trace.data.EventData
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.export.SpanExporter
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 
 @Service(Service.Level.APP)
 class TelemetrySpanExporter {
     private val spanExporter: SpanExporter? by lazy { OtlpSpanExporterFactory.create() }
 
-    @Volatile
-    private var isSessionInitialized = false
-    private val bufferedSpans = CopyOnWriteArrayList<SpanData>()
+    private val bufferLock = Any()
+    private val bufferedSpans = mutableListOf<SpanData>()
+
+    private val eventsLock = Any()
+    private val defaultSpanEvents = mutableListOf<EventData>()
 
     @Volatile
     private var sessionSpanId: String? = null
@@ -32,14 +34,13 @@ class TelemetrySpanExporter {
     }
 
     fun sessionSpanInitialized(spanId: String, traceId: String) {
-        val spansToFlush = synchronized(this) {
-            if (isSessionInitialized) {
+        val spansToFlush = synchronized(bufferLock) {
+            if (sessionSpanId != null) {
                 LOG.debug("Session already initialized, ignoring duplicate call")
                 return
             }
             sessionSpanId = spanId
             sessionTraceId = traceId
-            isSessionInitialized = true
             val spans = bufferedSpans.toList()
             bufferedSpans.clear()
             spans
@@ -57,9 +58,9 @@ class TelemetrySpanExporter {
         val filteredSpans = filterSpans(spanData)
         if (filteredSpans.isEmpty()) return
 
-        val spansToExport = synchronized(this) {
+        val spansToExport = synchronized(bufferLock) {
             bufferedSpans.addAll(filteredSpans)
-            if (isSessionInitialized) {
+            if (sessionSpanId != null) {
                 val spans = bufferedSpans.toList()
                 bufferedSpans.clear()
                 return@synchronized spans
@@ -81,7 +82,7 @@ class TelemetrySpanExporter {
             return
         }
 
-        val processedSpans = attachSessionParentToOrphanSpans(spans)
+        val processedSpans = processSpans(spans)
 
         try {
             val result = exporter.export(processedSpans)
@@ -94,26 +95,59 @@ class TelemetrySpanExporter {
         }
     }
 
-    private fun attachSessionParentToOrphanSpans(spans: Collection<SpanData>): Collection<SpanData> {
+    private fun processSpans(spans: Collection<SpanData>): Collection<SpanData> {
+        val filteredSpans = mutableListOf<SpanData>()
+
+        for (span in spans) {
+            if (span.name == "application-init") {
+                synchronized(eventsLock) {
+                    defaultSpanEvents.addAll(span.events)
+                }
+                LOG.debug("Captured ${span.events.size} events from default span, filtering it out from export")
+            } else {
+                filteredSpans.add(span)
+            }
+        }
+
+        return attachSessionParentAndEvents(filteredSpans)
+    }
+
+    private fun attachSessionParentAndEvents(spans: Collection<SpanData>): Collection<SpanData> {
         val spanId = sessionSpanId
         val traceId = sessionTraceId
         if (spanId == null || traceId == null) {
             return spans
         }
 
-        val sessionSpanContext = SpanContext.create(
-            traceId,
-            spanId,
-            TraceFlags.getSampled(),
-            TraceState.getDefault()
-        )
+        val sessionSpanContext = SpanContext.create(traceId, spanId, TraceFlags.getSampled(), TraceState.getDefault())
+        val defaultEvents = extractDefaultSpanEvents()
 
-        return spans.map { span ->
-            if (!span.parentSpanContext.isValid && span.spanId != sessionSpanId) {
-                SpanDelegatingData(span, sessionSpanContext)
-            } else {
-                span
+        return spans.map { transformSpan(it, sessionSpanContext, defaultEvents) }
+    }
+
+    private fun transformSpan(span: SpanData, sessionSpanContext: SpanContext, defaultEvents: List<EventData>): SpanData {
+        val isSessionSpan = span.name == "remote-dev-session"
+
+        return when {
+            isSessionSpan && defaultEvents.isNotEmpty() -> {
+                LOG.debug("Adding ${defaultEvents.size} events from default span to session span")
+                SpanDelegatingData(span, span.parentSpanContext, defaultEvents)
             }
+            !span.parentSpanContext.isValid && !isSessionSpan -> {
+                SpanDelegatingData(span, sessionSpanContext, emptyList())
+            }
+            else -> span
+        }
+    }
+
+    private fun extractDefaultSpanEvents(): List<EventData> {
+        if (defaultSpanEvents.isEmpty()) return emptyList()
+
+        return synchronized(eventsLock) {
+            if (defaultSpanEvents.isEmpty()) return emptyList()
+            val events = defaultSpanEvents.toList()
+            defaultSpanEvents.clear()
+            events
         }
     }
 
@@ -124,13 +158,21 @@ class TelemetrySpanExporter {
 
     private class SpanDelegatingData(
         private val delegate: SpanData,
-        private val newParent: SpanContext
+        private val newParent: SpanContext,
+        private val additionalEvents: List<EventData>
     ) : SpanData by delegate {
         override fun getTraceId(): String? = delegate.traceId
         override fun getSpanId(): String? = delegate.spanId
         override fun getParentSpanContext(): SpanContext = newParent
         override fun getParentSpanId(): String? = delegate.parentSpanId
         override fun getInstrumentationScopeInfo(): InstrumentationScopeInfo? = delegate.instrumentationScopeInfo
+        override fun getEvents(): List<EventData> {
+            return if (additionalEvents.isEmpty()) {
+                delegate.events
+            } else {
+                delegate.events + additionalEvents
+            }
+        }
     }
 
     companion object {

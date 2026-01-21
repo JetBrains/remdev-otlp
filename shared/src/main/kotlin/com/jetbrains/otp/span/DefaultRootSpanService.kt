@@ -24,19 +24,14 @@ class DefaultRootSpanService : AppLifecycleListener {
     @Volatile
     private var defaultSpan: Span? = null
 
-    @Volatile
-    private var defaultScope: Scope? = null
-
     init {
         ApplicationManager.getApplication().messageBus.connect().subscribe(AppLifecycleListener.TOPIC, this)
     }
 
     @Synchronized
     fun startSessionSpan(sessionId: String): Span {
-        defaultScope?.close()
         defaultSpan?.end()
         defaultSpan = null
-        defaultScope = null
 
         currentScope?.close()
         currentSpan?.end()
@@ -67,7 +62,6 @@ class DefaultRootSpanService : AppLifecycleListener {
         if (defaultSpan == null) {
             defaultSpan = TRACER.spanBuilder("application-init")
                 .startSpan()
-            defaultScope = defaultSpan!!.makeCurrent()
         }
         return defaultSpan!!
     }
@@ -75,7 +69,6 @@ class DefaultRootSpanService : AppLifecycleListener {
     override fun appWillBeClosed(isRestart: Boolean) {
         currentScope?.close()
         currentSpan?.end()
-        defaultScope?.close()
         defaultSpan?.end()
     }
 
@@ -83,12 +76,10 @@ class DefaultRootSpanService : AppLifecycleListener {
         fun getInstance(): DefaultRootSpanService = service()
 
         fun currentSpan(): Span {
+            val currentSpan = Span.current()
+            if(currentSpan.spanContext.isValid) return currentSpan
             val instance = getInstance()
             instance.currentSpan?.let { return it }
-            val contextSpan = Span.current()
-            if (contextSpan.spanContext.isValid) {
-                return contextSpan
-            }
             return instance.getOrCreateDefaultSpan()
         }
 
