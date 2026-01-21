@@ -5,8 +5,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
-import com.intellij.platform.diagnostic.telemetry.spans.FrequentSpans
-import com.intellij.platform.diagnostic.telemetry.spans.SpanNameRegistry
 
 @Service(Service.Level.APP)
 @State(

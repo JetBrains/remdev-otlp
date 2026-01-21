@@ -1,13 +1,10 @@
 package com.jetbrains.otp.settings
 
 import com.intellij.openapi.options.Configurable
-import com.intellij.platform.diagnostic.telemetry.spans.SpanNameRegistry
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.panel
 import com.jetbrains.otp.connection.getFrontendCoroutineScope
 import com.jetbrains.otp.settings.api.OtpDiagnosticSettingsApi
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.swing.JComponent
 
