@@ -4,6 +4,7 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.platform.diagnostic.telemetry.spans.SpanNameRegistry
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.panel
+import com.jetbrains.otp.connection.getFrontendCoroutineScope
 import com.jetbrains.otp.settings.api.OtpDiagnosticSettingsApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +15,7 @@ class OtpDiagnosticConfigurable : Configurable {
 
     private val settings = OtpDiagnosticSettings.getInstance()
     private val groupCheckboxes = mutableMapOf<String, JBCheckBox>()
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private val coroutineScope = getFrontendCoroutineScope()
 
     override fun getDisplayName(): String = OtpDiagnosticBundle.message("settings.displayName")
 
