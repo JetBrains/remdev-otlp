@@ -1,3 +1,6 @@
+Filters IDE OpenTelemetry events and adds Remote Development–specific events.
+Useful for debugging issues with Remote Development setups, especially when the backend runs on the host machine.
+
 ## Installation
 
 This plugin  must be installed on **both frontend and backend** sides.
