@@ -105,7 +105,7 @@ object SessionProcessor : SpanProcessor {
 
         return spans.map { span ->
             if (!span.parentSpanContext.isValid && span.name != "remote-dev-session") {
-                SpanDelegatingData(span, sessionSpanContext, emptyList())
+                SpanDelegatingData(span, newParent = sessionSpanContext)
             } else {
                 span
             }
@@ -121,7 +121,7 @@ object SessionProcessor : SpanProcessor {
         return spans.map { span ->
             if (span.name == "remote-dev-session") {
                 LOG.debug("Adding ${eventsToAttach.size} events to session span")
-                SpanDelegatingData(span, span.parentSpanContext, eventsToAttach)
+                SpanDelegatingData(span, additionalEvents = eventsToAttach)
             } else {
                 span
             }
