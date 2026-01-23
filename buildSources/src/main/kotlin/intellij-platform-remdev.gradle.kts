@@ -24,6 +24,8 @@ dependencies {
         exclude(group = "io.opentelemetry", module = "opentelemetry-sdk-metrics")
         exclude(group = "io.opentelemetry", module = "opentelemetry-api")
         exclude(group = "io.opentelemetry", module = "opentelemetry-context")
+        exclude(group = "org.jetbrains.kotlin")
+        exclude(group = "org.jetbrains.kotlinx")
     }
 }
 
