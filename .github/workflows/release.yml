@@ -84,9 +84,8 @@ jobs:
           files: |
             ${{ steps.find_artifact.outputs.artifact_path }}
             updatePlugins.xml
-          draft: true  # TODO Set to false after testing
-          prerelease: false
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-test') }}
           generate_release_notes: true
-          tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
