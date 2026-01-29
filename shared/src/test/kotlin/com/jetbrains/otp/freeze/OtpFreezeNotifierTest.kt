@@ -5,14 +5,14 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class OtpFreezeNotifierTest {
-    private val notifier = OtpFreezeNotifier()
+    private val abbreviator = StackTraceAbbreviator()
 
     private fun assertAbbreviation(expected: String, fullName: String) {
-        assertEquals(expected, notifier.abbreviateFullyQualifiedName(fullName))
+        assertEquals(expected, abbreviator.abbreviateFullyQualifiedName(fullName))
     }
 
     private fun assertNotAbbreviated(fullName: String) {
-        assertNull(notifier.abbreviateFullyQualifiedName(fullName))
+        assertNull(abbreviator.abbreviateFullyQualifiedName(fullName))
     }
 
     @Test
@@ -180,11 +180,58 @@ class OtpFreezeNotifierTest {
                 at com.example.myapp.MyClass.myMethod(MyClass.java:100)
         """.trimIndent()
 
-        val result = notifier.abbreviateStackTraces(stackTrace)
+        val result = abbreviator.abbreviateStackTraces(stackTrace)
 
         assert(result.contains("j.i.FileInputStream.readBytes"))
         assert(result.contains("j.u.ArrayList.add"))
         assert(result.contains("c.i.o.d.Logger.info"))
         assert(result.contains("com.example.myapp.MyClass.myMethod"))
+    }
+
+    @Test
+    fun `truncateToMaxBytes does not truncate when under limit`() {
+        val text = "Hello World"
+        val result = abbreviator.truncateToMaxBytes(text, 100)
+        assertEquals(text, result)
+    }
+
+    @Test
+    fun `truncateToMaxBytes truncates when over limit`() {
+        val text = "Hello World, this is a long text"
+        val result = abbreviator.truncateToMaxBytes(text, 20)
+        assert(result.endsWith("... (truncated)"))
+        assert(result.toByteArray(Charsets.UTF_8).size <= 20)
+    }
+
+    @Test
+    fun `truncateToMaxBytes handles multi-byte UTF-8 characters`() {
+        val text = "Hello 世界 мир 🌍"
+        val maxBytes = 30
+        val result = abbreviator.truncateToMaxBytes(text, maxBytes)
+
+        val resultBytes = result.toByteArray(Charsets.UTF_8)
+        assert(resultBytes.size <= maxBytes) { "Result has ${resultBytes.size} bytes, expected <= $maxBytes" }
+
+        if (text.toByteArray(Charsets.UTF_8).size > maxBytes) {
+            assert(result.contains("truncated")) { "Expected truncation marker in result" }
+        }
+
+        resultBytes.toString(Charsets.UTF_8)
+    }
+
+    @Test
+    fun `truncateToMaxBytes handles exact boundary`() {
+        val text = "Test"
+        val suffix = "\n... (truncated)"
+        val maxBytes = text.toByteArray(Charsets.UTF_8).size + suffix.toByteArray(Charsets.UTF_8).size
+        val result = abbreviator.truncateToMaxBytes(text, maxBytes)
+        assertEquals(text, result)
+    }
+
+    @Test
+    fun `truncateToMaxBytes handles very small limit`() {
+        val text = "Hello World"
+        val result = abbreviator.truncateToMaxBytes(text, 5)
+        assert(result.toByteArray(Charsets.UTF_8).size <= 5)
     }
 }
