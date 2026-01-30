@@ -17,5 +17,6 @@
                             serviceImplementation="com.jetbrains.otp.settings.BackendSpanFilterService"/>
         <platform.rpc.backend.remoteApiProvider implementation="com.jetbrains.otp.settings.OtpDiagnosticSettingsApiProvider"/>
         <platform.rpc.backend.remoteApiProvider implementation="com.jetbrains.otp.span.OtpSessionSpanApiProvider"/>
+        <platform.rpc.backend.remoteApiProvider implementation="com.jetbrains.otp.crypto.CryptoRpcProvider"/>
     </extensions>
 </idea-plugin>
