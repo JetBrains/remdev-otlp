@@ -1,11 +1,10 @@
 package com.jetbrains.otp.span
 
-import com.intellij.openapi.application.ApplicationManager
 import com.jetbrains.otp.api.OtpSessionSpanApi
+import com.jetbrains.otp.exporter.processor.SessionProcessor
 
 internal class BackendOtpSessionSpanApiImpl : OtpSessionSpanApi {
     override suspend fun notifySessionSpanInitialized(spanId: String, traceId: String) {
-        ApplicationManager.getApplication().messageBus.syncPublisher(SessionSpanListener.TOPIC)
-            .sessionSpanInitialized(spanId, traceId)
+        SessionProcessor.onSessionInitialized(spanId, traceId)
     }
 }

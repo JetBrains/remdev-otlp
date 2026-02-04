@@ -2,11 +2,15 @@ package com.jetbrains.otp.exporter.processor
 
 import com.intellij.openapi.diagnostic.Logger
 import com.jetbrains.otp.exporter.TelemetrySpanExporter
+import com.jetbrains.otp.span.DefaultRootSpanService
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanContext
 import io.opentelemetry.api.trace.TraceFlags
 import io.opentelemetry.api.trace.TraceState
+import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.trace.data.EventData
 import io.opentelemetry.sdk.trace.data.SpanData
+import java.time.Instant
 
 
 object SessionProcessor : SpanProcessor {
@@ -19,10 +23,7 @@ object SessionProcessor : SpanProcessor {
     private var sessionInitialized = false
 
     @Volatile
-    private var sessionSpanId: String? = null
-
-    @Volatile
-    private var sessionTraceId: String? = null
+    private var sessionSpanContext: SpanContext? = null
 
     override fun process(spans: Collection<SpanData>): Collection<SpanData> {
         val bufferedEvents = bufferIfNeeded(spans)
@@ -37,14 +38,18 @@ object SessionProcessor : SpanProcessor {
 
     override fun getOrder(): Int = 0
 
-    fun onSessionInitialized(spanId: String, traceId: String) {
+    fun onSessionInitialized(spanId: String, traceId: String, hostName: String? = null, sessionId: String? = null) {
         val spans = synchronized(bufferLock) {
             if (sessionInitialized) {
                 LOG.debug("Session already initialized, ignoring duplicate call")
                 return
             }
-            sessionSpanId = spanId
-            sessionTraceId = traceId
+            sessionSpanContext = SpanContext.create(
+                traceId,
+                spanId,
+                TraceFlags.getSampled(),
+                TraceState.getDefault()
+            )
             sessionInitialized = true
             val spans = bufferedSpans.toList()
             bufferedSpans.clear()
@@ -56,7 +61,26 @@ object SessionProcessor : SpanProcessor {
             }
             spans
         }
+
+        val earliestStartTime = spans.minOfOrNull { it.startEpochNanos } ?: System.nanoTime()
+        createMetaSpan(hostName, sessionId, earliestStartTime)
         TelemetrySpanExporter.getInstance().sendSpans(spans)
+    }
+
+    private fun createMetaSpan(hostName: String?, sessionId: String?, startTimeNanos: Long) {
+        val context = sessionSpanContext ?: return
+
+        val tracer = DefaultRootSpanService.TRACER
+        val metaSpan = tracer.spanBuilder("session-metadata")
+            .setParent(Context.root().with(Span.wrap(context)))
+            .setStartTimestamp(startTimeNanos, java.util.concurrent.TimeUnit.NANOSECONDS)
+            .startSpan()
+
+        metaSpan.setAttribute("session.trace_id", context.traceId)
+        metaSpan.setAttribute("session.span_id", context.spanId)
+        hostName?.let { metaSpan.setAttribute("host-name", it) }
+        sessionId?.let { metaSpan.setAttribute("session.id", it) }
+        metaSpan.end(Instant.now().plusSeconds(2))
     }
 
     private fun bufferIfNeeded(spans: Collection<SpanData>): Collection<SpanData> {
@@ -89,23 +113,14 @@ object SessionProcessor : SpanProcessor {
     }
 
     private fun attachSessionParent(spans: Collection<SpanData>): Collection<SpanData> {
-        val spanId = sessionSpanId
-        val traceId = sessionTraceId
-
-        if (spanId == null || traceId == null) {
+        val context = sessionSpanContext
+        if (context == null || !context.isValid) {
             return spans
         }
 
-        val sessionSpanContext = SpanContext.create(
-            traceId,
-            spanId,
-            TraceFlags.getSampled(),
-            TraceState.getDefault()
-        )
-
         return spans.map { span ->
             if (!span.parentSpanContext.isValid && span.name != "remote-dev-session") {
-                SpanDelegatingData(span, newParent = sessionSpanContext)
+                SpanDelegatingData(span, newParent = context)
             } else {
                 span
             }
