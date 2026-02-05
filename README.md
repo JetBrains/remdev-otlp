@@ -9,7 +9,7 @@ This plugin  must be installed on **both frontend and backend** sides.
 
 ### Required Configuration
 
-Set your Honeycomb API key using either:
+Set your Honeycomb API key **on the backend only** using either:
 
 **Environment Variable:**
 ```bash
@@ -21,6 +21,8 @@ export HONEYCOMB_API_KEY=your_api_key_here
 -Dhoneycomb.api.key=your_api_key_here
 ```
 
+The plugin automatically propagates the API key securely from backend to frontend via encrypted RPC
+
 ### Optional Configuration
 
 **Honeycomb Dataset:**
@@ -29,17 +31,30 @@ export HONEYCOMB_DATASET=your_dataset_name
 ```
 Default: `intellij-plugin`
 
-**Enable OpenTelemetry Export on both backend and frontend sides:**
-```
--Drdct.diagnostic.otlp=true
--Didea.diagnostic.opentelemetry.otlp=true
-```
-
 ## Spans
 
 The plugin creates the following OpenTelemetry spans to track various aspects of your remote development session:
 
-### 1. `remote-dev-session`
+### 1. `session-metadata`
+
+A short-lived metadata span created at session initialization to store session information.
+
+**Created when:** Session is initialized (backend notifies frontend of session start)
+
+
+**Attributes:**
+- `session.trace_id` (string): The trace ID of the session
+- `session.span_id` (string): The span ID of the session
+- `host-name` (string): Name of the backend host
+- `session.id` (string): Unique identifier for the session
+
+**Parent:** Root span
+
+**Purpose:** This span is useful for finding and identifying sessions in your telemetry backend even when the main `remote-dev-session` span hasn't closed yet (see note about long-running spans below).
+
+---
+
+### 2. `remote-dev-session`
 
 Tracks an active remote development session from start to finish.
 
@@ -51,9 +66,11 @@ Tracks an active remote development session from start to finish.
 
 **Parent:** Root span
 
+**Note:** This span can be long-running (hours or days) and may not close until the session ends. Use the `session-metadata` span to identify active sessions.
+
 ---
 
-### 2. `application-idle`
+### 3. `application-idle`
 
 Lazy-created default span that captures telemetry events before the first remote development session starts.
 
@@ -63,7 +80,7 @@ Lazy-created default span that captures telemetry events before the first remote
 
 ---
 
-### 3. `connection-dropped-reconnecting`
+### 4. `connection-dropped-reconnecting`
 
 Tracks the duration of connection drops and reconnection attempts.
 
@@ -79,7 +96,7 @@ Tracks the duration of connection drops and reconnection attempts.
 
 ---
 
-### 4. `ui-thread-freeze`
+### 5. `ui-thread-freeze`
 
 Captures UI freeze events with accurate timing based on freeze duration.
 
@@ -89,6 +106,17 @@ Captures UI freeze events with accurate timing based on freeze duration.
 **Parent:** Current session span (`remote-dev-session` or `application-idle`)
 
 **Note:** This span is created retroactively with explicit start/end timestamps calculated from the freeze duration.
+
+---
+
+## Long-Running Spans
+
+Some spans, particularly `remote-dev-session`, are designed to be long-running and may remain open for extended periods (hours or even days) until the session ends. This is normal behavior for session-tracking spans.
+
+When querying your telemetry backend:
+- Use the `session-metadata` span to identify and locate sessions, as it closes quickly after session initialization
+- The main `remote-dev-session` span will only close when the actual session terminates
+- All other spans are short-lived and close immediately after their tracked operations complete
 
 ---
 
