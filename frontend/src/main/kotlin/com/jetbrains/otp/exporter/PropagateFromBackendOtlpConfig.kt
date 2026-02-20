@@ -14,8 +14,10 @@ class PropagateFromBackendOtlpConfig(
     override var headers: Map<String, String> = emptyMap()
         private set
 
+    private var initialized = false
+
     override suspend fun initialize() {
-        if (headers.isNotEmpty()) return
+        if (initialized) return
         try {
             if (!cryptoClient.isInitialized()) {
                 cryptoClient.initialize()
@@ -25,6 +27,7 @@ class PropagateFromBackendOtlpConfig(
             val encryptedHeaders = cryptoRpc.getEncryptedOtlpHeaders()
             val headersStr = cryptoClient.decryptData(encryptedHeaders)
             headers = parseOtlpHeaders(headersStr)
+            initialized = true
         } catch (e: Exception) {
             LOG.error("Failed to initialize OTLP config from backend", e)
             throw e

@@ -43,11 +43,6 @@ object OtlpSpanExporterFactory {
     suspend fun create(config: OtlpConfig): SpanExporter? {
         config.initialize()
 
-        if (config.headers.isEmpty()) {
-            LOG.warn("OTLP headers not configured. Set OTEL_EXPORTER_OTLP_HEADERS environment variable or otel.exporter.otlp.headers system property.")
-            return null
-        }
-
         return try {
             val builder = OtlpHttpSpanExporter.builder()
                 .setEndpoint("${config.endpoint}/v1/traces")

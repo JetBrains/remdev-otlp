@@ -16,8 +16,7 @@ internal class CryptoRpcImpl : CryptoRpc {
     override suspend fun getEncryptedOtlpHeaders(): EncryptedData {
         val headersStr = System.getProperty("otel.exporter.otlp.headers")
             ?: System.getenv("OTEL_EXPORTER_OTLP_HEADERS")
-            ?: throw IllegalStateException("OTLP headers not configured on backend. " +
-                    "Set OTEL_EXPORTER_OTLP_HEADERS environment variable or otel.exporter.otlp.headers system property.")
+            ?: ""
         return cryptoService.encryptData(headersStr)
     }
 }
