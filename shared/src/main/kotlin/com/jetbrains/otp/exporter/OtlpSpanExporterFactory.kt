@@ -8,28 +8,33 @@ import java.util.concurrent.TimeUnit
 interface OtlpConfig {
     suspend fun initialize()
 
-    val dataset: String
     val endpoint: String
+    val headers: Map<String, String>
     val timeoutSeconds: Long
-
-    fun getApiKey(): String?
 }
 
 class FromEnvOtlpConfig(
-    override val dataset: String = System.getProperty("honeycomb.dataset")
-        ?: System.getenv("HONEYCOMB_DATASET")
-        ?: "intellij-plugin",
-    override val endpoint: String = "https://api.honeycomb.io/v1/traces",
+    override val endpoint: String = System.getProperty("otel.exporter.otlp.endpoint")
+        ?: System.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+        ?: "https://api.honeycomb.io",
     override val timeoutSeconds: Long = 10
 ) : OtlpConfig {
-    private var apiKey: String? = null
+    override var headers: Map<String, String> = emptyMap()
+        private set
 
     override suspend fun initialize() {
-        apiKey = System.getProperty("honeycomb.api.key")
-            ?: System.getenv("HONEYCOMB_API_KEY")
+        val headersStr = System.getProperty("otel.exporter.otlp.headers")
+            ?: System.getenv("OTEL_EXPORTER_OTLP_HEADERS")
+        headers = parseOtlpHeaders(headersStr)
     }
+}
 
-    override fun getApiKey(): String? = apiKey
+fun parseOtlpHeaders(headersStr: String?): Map<String, String> {
+    if (headersStr.isNullOrBlank()) return emptyMap()
+    return headersStr.split(",").mapNotNull { entry ->
+        val parts = entry.split("=", limit = 2)
+        if (parts.size == 2) parts[0].trim() to parts[1].trim() else null
+    }.toMap()
 }
 
 object OtlpSpanExporterFactory {
@@ -38,21 +43,19 @@ object OtlpSpanExporterFactory {
     suspend fun create(config: OtlpConfig): SpanExporter? {
         config.initialize()
 
-        val apiKey = config.getApiKey()
-        if (apiKey.isNullOrBlank()) {
-            LOG.warn("Honeycomb API key not configured. Set HONEYCOMB_API_KEY environment variable or honeycomb.api.key system property.")
+        if (config.headers.isEmpty()) {
+            LOG.warn("OTLP headers not configured. Set OTEL_EXPORTER_OTLP_HEADERS environment variable or otel.exporter.otlp.headers system property.")
             return null
         }
 
         return try {
-            OtlpHttpSpanExporter.builder()
-                .setEndpoint(config.endpoint)
-                .addHeader("x-honeycomb-team", apiKey)
-                .addHeader("x-honeycomb-dataset", config.dataset)
+            val builder = OtlpHttpSpanExporter.builder()
+                .setEndpoint("${config.endpoint}/v1/traces")
                 .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
-                .build()
+            config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
+            builder.build()
         } catch (e: Exception) {
-            LOG.error("Failed to initialize Honeycomb exporter", e)
+            LOG.error("Failed to initialize OTLP span exporter", e)
             null
         }
     }

@@ -9,27 +9,29 @@ This plugin  must be installed on **both frontend and backend** sides.
 
 ### Required Configuration
 
-Set your Honeycomb API key **on the backend only** using either:
+Set your OTLP headers **on the backend only** using either:
 
 **Environment Variable:**
 ```bash
-export HONEYCOMB_API_KEY=your_api_key_here
+export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your_api_key,x-honeycomb-dataset=your_dataset"
 ```
 
 **OR System Property:**
 ```
--Dhoneycomb.api.key=your_api_key_here
+-Dotel.exporter.otlp.headers=x-honeycomb-team=your_api_key,x-honeycomb-dataset=your_dataset
 ```
 
-The plugin automatically propagates the API key securely from backend to frontend via encrypted RPC
+Headers follow the standard [OTEL_EXPORTER_OTLP_HEADERS](https://opentelemetry.io/docs/specs/otel/protocol/exporter/) format: comma-separated `key=value` pairs. This works with any OTLP-compatible backend (Honeycomb, Jaeger, Grafana, etc.).
+
+The plugin automatically propagates the headers securely from backend to frontend via encrypted RPC.
 
 ### Optional Configuration
 
-**Honeycomb Dataset:**
+**OTLP Endpoint:**
 ```bash
-export HONEYCOMB_DATASET=your_dataset_name
+export OTEL_EXPORTER_OTLP_ENDPOINT=https://api.honeycomb.io
 ```
-Default: `intellij-plugin`
+Default: `https://api.honeycomb.io`
 
 ## Spans
 

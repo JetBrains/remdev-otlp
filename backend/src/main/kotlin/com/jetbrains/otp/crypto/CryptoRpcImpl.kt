@@ -13,11 +13,11 @@ internal class CryptoRpcImpl : CryptoRpc {
         return cryptoService.decryptData(data)
     }
 
-    override suspend fun getEncryptedHoneycombApiKey(): EncryptedData {
-        val apiKey = System.getProperty("honeycomb.api.key")
-            ?: System.getenv("HONEYCOMB_API_KEY")
-            ?: throw IllegalStateException("Honeycomb API key not configured on backend")
-
-        return cryptoService.encryptData(apiKey)
+    override suspend fun getEncryptedOtlpHeaders(): EncryptedData {
+        val headersStr = System.getProperty("otel.exporter.otlp.headers")
+            ?: System.getenv("OTEL_EXPORTER_OTLP_HEADERS")
+            ?: throw IllegalStateException("OTLP headers not configured on backend. " +
+                    "Set OTEL_EXPORTER_OTLP_HEADERS environment variable or otel.exporter.otlp.headers system property.")
+        return cryptoService.encryptData(headersStr)
     }
 }

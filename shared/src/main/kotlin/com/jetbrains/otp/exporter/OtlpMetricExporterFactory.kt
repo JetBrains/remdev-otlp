@@ -11,21 +11,19 @@ object OtlpMetricExporterFactory {
     suspend fun create(config: OtlpConfig): MetricExporter? {
         config.initialize()
 
-        val apiKey = config.getApiKey()
-        if (apiKey.isNullOrBlank()) {
-            LOG.warn("Honeycomb API key not configured. Set HONEYCOMB_API_KEY environment variable or honeycomb.api.key system property.")
+        if (config.headers.isEmpty()) {
+            LOG.warn("OTLP headers not configured. Set OTEL_EXPORTER_OTLP_HEADERS environment variable or otel.exporter.otlp.headers system property.")
             return null
         }
 
         return try {
-            OtlpHttpMetricExporter.builder()
-                .setEndpoint("https://api.honeycomb.io/v1/metrics")
-                .addHeader("x-honeycomb-team", apiKey)
-                .addHeader("x-honeycomb-dataset", config.dataset)
+            val builder = OtlpHttpMetricExporter.builder()
+                .setEndpoint("${config.endpoint}/v1/metrics")
                 .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
-                .build()
+            config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
+            builder.build()
         } catch (e: Exception) {
-            LOG.error("Failed to initialize Honeycomb metric exporter", e)
+            LOG.error("Failed to initialize OTLP metric exporter", e)
             null
         }
     }

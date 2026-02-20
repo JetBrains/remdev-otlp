@@ -55,7 +55,7 @@ class TelemetrySpanExporter {
     private fun doExport(spans: Collection<SpanData>) {
         val exporter = spanExporter
         if (exporter == null) {
-            LOG.debug("Honeycomb exporter not initialized. Spans will not be sent.")
+            LOG.debug("OTLP exporter not initialized. Spans will not be sent.")
             return
         }
 
@@ -63,10 +63,10 @@ class TelemetrySpanExporter {
             val result = exporter.export(spans)
             result.join(5, TimeUnit.SECONDS)
             if (!result.isSuccess) {
-                LOG.warn("Failed to export spans to Honeycomb: $result")
+                LOG.warn("Failed to export spans via OTLP: $result")
             }
         } catch (e: Exception) {
-            LOG.warn("Error exporting spans to Honeycomb", e)
+            LOG.warn("Error exporting spans via OTLP", e)
         }
     }
 

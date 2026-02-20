@@ -9,7 +9,7 @@
 
         Features:
         <ul>
-            <li>Export telemetry spans to Honeycomb via OTLP</li>
+            <li>Export telemetry spans via OTLP to any compatible backend</li>
             <li>Track exceptions with OpenTelemetry spans</li>
             <li>Monitor frontend and backend metrics separately</li>
             <li>Support for remote development diagnostics</li>
@@ -17,8 +17,8 @@
 
         Configuration:
         <ul>
-            <li>Set HONEYCOMB_API_KEY environment variable or honeycomb.api.key system property</li>
-            <li>Optional: Set HONEYCOMB_DATASET environment variable (default: intellij-plugin)</li>
+            <li>Set OTEL_EXPORTER_OTLP_HEADERS environment variable or otel.exporter.otlp.headers system property</li>
+            <li>Optional: Set OTEL_EXPORTER_OTLP_ENDPOINT environment variable (default: https://api.honeycomb.io)</li>
         </ul>
     ]]></description>
 
