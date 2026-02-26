@@ -21,8 +21,10 @@ class ClientSessionSpanUpdater : ClientSessionListener {
         val sessionSpan = DefaultRootSpanService.getInstance().startSessionSpan(ThinClientId.Instance.value)
         val hostName = ConnectionInfoProvider.getBackendName()
         val sessionId = session.clientId.value
+        val processId = ProcessHandle.current().pid().toString()
         CommonSpanAttributesState.put(CommonSpanAttributes.HOST_NAME, hostName)
         CommonSpanAttributesState.put(CommonSpanAttributes.SESSION_ID, sessionId)
+        CommonSpanAttributesState.put(CommonSpanAttributes.PROCESS_ID, processId)
 
         SessionProcessor.onSessionInitialized(
             sessionSpan.spanContext.spanId,
