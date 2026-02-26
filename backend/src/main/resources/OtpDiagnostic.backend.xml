@@ -6,10 +6,6 @@
         <plugin id="com.jetbrains.codeWithMe"/>
     </dependencies>
 
-    <extensions defaultExtensionNs="com.jetbrains.otp.diagnostic">
-        <spanProcessorProvider implementation="com.jetbrains.otp.exporter.BackendSpanProcessorProvider"/>
-    </extensions>
-
     <extensions defaultExtensionNs="com.intellij">
         <openTelemetryExporterProvider implementation="com.jetbrains.otp.exporter.BackendMetricExporter"/>
 
