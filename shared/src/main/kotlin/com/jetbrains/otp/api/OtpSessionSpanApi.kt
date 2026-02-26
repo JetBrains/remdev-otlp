@@ -10,7 +10,7 @@ import org.jetbrains.annotations.ApiStatus
 @Suppress("UnstableApiUsage")
 @ApiStatus.Internal
 interface OtpSessionSpanApi : RemoteApi<Unit> {
-    suspend fun notifySessionSpanInitialized(spanId: String, traceId: String)
+    suspend fun notifySessionSpanInitialized(spanId: String, traceId: String, commonSpanAttributes: Map<String, String>)
 
     companion object {
         @JvmStatic

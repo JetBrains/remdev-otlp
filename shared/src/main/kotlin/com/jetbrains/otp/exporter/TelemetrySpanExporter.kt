@@ -3,6 +3,7 @@ package com.jetbrains.otp.exporter
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
+import com.jetbrains.otp.exporter.processor.CommonAttributesProcessor
 import com.jetbrains.otp.exporter.processor.SessionProcessor
 import com.jetbrains.otp.exporter.processor.SpanProcessor
 import com.jetbrains.otp.exporter.processor.SpanProcessorProvider
@@ -27,7 +28,7 @@ class TelemetrySpanExporter {
     }
 
     private fun createProcessors(): List<SpanProcessor> {
-        val processors = mutableListOf<SpanProcessor>(SessionProcessor)
+        val processors = mutableListOf(SessionProcessor, CommonAttributesProcessor)
 
         SpanProcessorProvider.EP_NAME.extensionList.forEach { provider ->
             processors.addAll(provider.getProcessors())
