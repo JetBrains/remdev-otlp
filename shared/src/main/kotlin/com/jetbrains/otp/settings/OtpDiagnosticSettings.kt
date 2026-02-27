@@ -5,6 +5,8 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
+import com.jetbrains.otp.exporter.isPluginSpanFilterDefinedInPropertyOrEnv
+import com.jetbrains.otp.exporter.readPluginSpanFilterEnabledFromPropertyOrEnv
 
 @Service(Service.Level.APP)
 @State(
@@ -18,6 +20,7 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
     data class State(
         var disabledCategories: MutableSet<String> = mutableSetOf(),
         var frequentSpansEnabled: Boolean = false,
+        var pluginSpanFilterEnabled: Boolean = true,
     )
 
     override fun getState(): State = state
@@ -26,10 +29,15 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
         this.state = state
     }
 
-    fun syncFilteringSettings(disabledCategories: Set<String>, frequentSpansEnabled: Boolean) {
+    fun syncFilteringSettings(
+        disabledCategories: Set<String>,
+        frequentSpansEnabled: Boolean,
+        pluginSpanFilterEnabled: Boolean,
+    ) {
         state.disabledCategories.clear()
         state.disabledCategories.addAll(disabledCategories)
         state.frequentSpansEnabled = frequentSpansEnabled
+        state.pluginSpanFilterEnabled = pluginSpanFilterEnabled
     }
 
     fun isCategoryEnabled(categoryId: String): Boolean {
@@ -46,6 +54,18 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
 
     fun isFrequentSpansEnabled(): Boolean {
         return state.frequentSpansEnabled
+    }
+
+    fun isPluginSpanFilterEnabled(): Boolean {
+        return state.pluginSpanFilterEnabled
+    }
+
+    fun isPluginSpanFilterEnabledEffective(): Boolean {
+        return readPluginSpanFilterEnabledFromPropertyOrEnv(state.pluginSpanFilterEnabled)
+    }
+
+    fun isPluginSpanFilterOverriddenByPropertyOrEnv(): Boolean {
+        return isPluginSpanFilterDefinedInPropertyOrEnv()
     }
 
     companion object {

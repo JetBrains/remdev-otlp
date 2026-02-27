@@ -3,7 +3,7 @@ package com.jetbrains.otp.crypto
 import com.jetbrains.otp.crypto.rpc.CryptoRpc
 import com.jetbrains.otp.exporter.readOtlpEndpointFromPropertyOrEnv
 import com.jetbrains.otp.exporter.readRawOtlpHeadersFromPropertyOrEnv
-import com.jetbrains.otp.exporter.readPluginSpanFilterEnabledFromPropertyOrEnv
+import com.jetbrains.otp.settings.OtpDiagnosticSettings
 
 internal class CryptoRpcImpl : CryptoRpc {
     private val cryptoService = BackendCryptoService.getInstance()
@@ -21,7 +21,7 @@ internal class CryptoRpcImpl : CryptoRpc {
         return OtlpRemoteConfig(
             endpoint = readOtlpEndpointFromPropertyOrEnv(),
             encryptedHeaders = cryptoService.encryptData(headersStr),
-            isPluginSpanFilterEnabled = readPluginSpanFilterEnabledFromPropertyOrEnv()
+            isPluginSpanFilterEnabled = OtpDiagnosticSettings.getInstance().isPluginSpanFilterEnabledEffective(),
         )
     }
 }

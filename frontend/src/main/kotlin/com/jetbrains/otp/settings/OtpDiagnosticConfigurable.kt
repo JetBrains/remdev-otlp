@@ -20,19 +20,34 @@ class OtpDiagnosticConfigurable : Configurable {
     private val settings = OtpDiagnosticSettings.getInstance()
     private val categoryCheckboxes = mutableMapOf<String, JBCheckBox>()
     private var frequentSpansCheckBox: JBCheckBox? = null
+    private var pluginSpanFilterCheckBox: JBCheckBox? = null
     private val coroutineScope = getFrontendCoroutineScope()
 
     override fun getDisplayName(): String = OtpDiagnosticBundle.message("settings.displayName")
 
     override fun createComponent(): JComponent {
         categoryCheckboxes.clear()
+        val pluginSpanFilterOverridden = settings.isPluginSpanFilterOverriddenByPropertyOrEnv()
         frequentSpansCheckBox = JBCheckBox(OtpDiagnosticBundle.message("settings.checkbox.frequentSpans")).apply {
             isSelected = settings.isFrequentSpansEnabled()
+        }
+        pluginSpanFilterCheckBox = JBCheckBox(OtpDiagnosticBundle.message("settings.checkbox.pluginSpanFilter")).apply {
+            isSelected = settings.isPluginSpanFilterEnabledEffective()
+            isEnabled = !pluginSpanFilterOverridden
+            if (pluginSpanFilterOverridden) {
+                toolTipText = OtpDiagnosticBundle.message("settings.label.pluginSpanFilter.overridden")
+            }
         }
 
         val frequentSpansPanel = JPanel(BorderLayout(JBUI.scale(8), JBUI.scale(8))).apply {
             border = BorderFactory.createTitledBorder(OtpDiagnosticBundle.message("settings.group.frequentSpans"))
-            add(frequentSpansCheckBox, BorderLayout.NORTH)
+            val checksPanel = JPanel().apply {
+                layout = BoxLayout(this, BoxLayout.Y_AXIS)
+                isOpaque = false
+                add(frequentSpansCheckBox)
+                add(pluginSpanFilterCheckBox)
+            }
+            add(checksPanel, BorderLayout.NORTH)
             add(JBLabel(OtpDiagnosticBundle.message("settings.label.frequentSpans.description")), BorderLayout.CENTER)
         }
 
@@ -122,16 +137,24 @@ class OtpDiagnosticConfigurable : Configurable {
 
     override fun isModified(): Boolean {
         val frequentSpansModified = frequentSpansCheckBox?.isSelected != settings.isFrequentSpansEnabled()
+        val pluginSpanFilterModified = !settings.isPluginSpanFilterOverriddenByPropertyOrEnv()
+            && pluginSpanFilterCheckBox?.isSelected != settings.isPluginSpanFilterEnabled()
         val persistedKnownDisabled = settings.getDisabledCategories().intersect(SpanCategoryRegistry.allCategories)
-        return frequentSpansModified || collectKnownDisabledCategories() != persistedKnownDisabled
+        return frequentSpansModified || pluginSpanFilterModified || collectKnownDisabledCategories() != persistedKnownDisabled
     }
 
     override fun apply() {
         val disabledCategories = collectKnownDisabledCategories() + collectUnknownDisabledCategories()
         val frequentSpansEnabled = frequentSpansCheckBox?.isSelected ?: settings.isFrequentSpansEnabled()
+        val pluginSpanFilterEnabled = if (settings.isPluginSpanFilterOverriddenByPropertyOrEnv()) {
+            settings.isPluginSpanFilterEnabledEffective()
+        } else {
+            pluginSpanFilterCheckBox?.isSelected ?: settings.isPluginSpanFilterEnabled()
+        }
         settings.syncFilteringSettings(
             disabledCategories = disabledCategories,
             frequentSpansEnabled = frequentSpansEnabled,
+            pluginSpanFilterEnabled = pluginSpanFilterEnabled,
         )
 
         coroutineScope.launch {
@@ -139,12 +162,14 @@ class OtpDiagnosticConfigurable : Configurable {
             backendSettings.syncFilteringSettings(
                 disabledCategories = disabledCategories,
                 frequentSpansEnabled = frequentSpansEnabled,
+                pluginSpanFilterEnabled = pluginSpanFilterEnabled,
             )
         }
     }
 
     override fun reset() {
         frequentSpansCheckBox?.isSelected = settings.isFrequentSpansEnabled()
+        pluginSpanFilterCheckBox?.isSelected = settings.isPluginSpanFilterEnabledEffective()
         categoryCheckboxes.forEach { (categoryId, checkbox) ->
             checkbox.isSelected = settings.isCategoryEnabled(categoryId)
         }

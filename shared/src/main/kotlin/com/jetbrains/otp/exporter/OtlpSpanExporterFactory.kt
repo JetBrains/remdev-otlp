@@ -1,6 +1,7 @@
 package com.jetbrains.otp.exporter
 
 import com.intellij.openapi.diagnostic.Logger
+import com.jetbrains.otp.settings.OtpDiagnosticSettings
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.util.concurrent.TimeUnit
@@ -18,7 +19,7 @@ object OtlpConfigFactory {
             endpoint = readOtlpEndpointFromPropertyOrEnv(),
             headers = readOtlpHeadersFromPropertyOrEnv(),
             timeoutSeconds = timeoutSeconds,
-            isPluginSpanFilterEnabled = readPluginSpanFilterEnabledFromPropertyOrEnv()
+            isPluginSpanFilterEnabled = OtpDiagnosticSettings.getInstance().isPluginSpanFilterEnabledEffective()
         )
     }
 }
@@ -62,6 +63,11 @@ fun readPluginSpanFilterEnabledFromPropertyOrEnv(defaultValue: Boolean = true): 
         envName = PLUGIN_SPAN_FILTER_ENABLED_ENV,
         defaultValue = defaultValue
     )
+}
+
+fun isPluginSpanFilterDefinedInPropertyOrEnv(): Boolean {
+    return System.getProperty(PLUGIN_SPAN_FILTER_ENABLED_PROPERTY) != null
+        || System.getenv(PLUGIN_SPAN_FILTER_ENABLED_ENV) != null
 }
 
 private fun readBooleanFromPropertyOrEnv(propertyName: String, envName: String, defaultValue: Boolean): Boolean {

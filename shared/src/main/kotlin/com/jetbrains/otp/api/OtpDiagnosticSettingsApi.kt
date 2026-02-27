@@ -10,7 +10,11 @@ import org.jetbrains.annotations.ApiStatus
 @Suppress("UnstableApiUsage")
 @ApiStatus.Internal
 interface OtpDiagnosticSettingsApi : RemoteApi<Unit> {
-    suspend fun syncFilteringSettings(disabledCategories: Set<String>, frequentSpansEnabled: Boolean)
+    suspend fun syncFilteringSettings(
+        disabledCategories: Set<String>,
+        frequentSpansEnabled: Boolean,
+        pluginSpanFilterEnabled: Boolean,
+    )
 
     companion object {
         @JvmStatic
