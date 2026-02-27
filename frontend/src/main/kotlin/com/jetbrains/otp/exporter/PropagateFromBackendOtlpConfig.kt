@@ -5,13 +5,13 @@ import com.jetbrains.otp.crypto.FrontendCryptoClient
 import com.jetbrains.otp.crypto.rpc.CryptoRpc
 
 class PropagateFromBackendOtlpConfig(
-    override val endpoint: String = System.getProperty("otel.exporter.otlp.endpoint")
-        ?: System.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
-        ?: "https://api.honeycomb.io",
+    override var endpoint: String = DEFAULT_OTLP_ENDPOINT,
     override val timeoutSeconds: Long = 10
 ) : OtlpConfig {
     private val cryptoClient = FrontendCryptoClient.getInstance()
     override var headers: Map<String, String> = emptyMap()
+        private set
+    override var isPluginSpanFilterEnabled: Boolean = readPluginSpanFilterEnabledFromPropertyOrEnv()
         private set
 
     private var initialized = false
@@ -24,9 +24,11 @@ class PropagateFromBackendOtlpConfig(
             }
 
             val cryptoRpc = CryptoRpc.getInstance()
-            val encryptedHeaders = cryptoRpc.getEncryptedOtlpHeaders()
-            val headersStr = cryptoClient.decryptData(encryptedHeaders)
+            val remoteConfig = cryptoRpc.getOtlpRemoteConfig()
+            endpoint = remoteConfig.endpoint
+            val headersStr = cryptoClient.decryptData(remoteConfig.encryptedHeaders)
             headers = parseOtlpHeaders(headersStr)
+            isPluginSpanFilterEnabled = remoteConfig.isPluginSpanFilterEnabled
             initialized = true
         } catch (e: Exception) {
             LOG.error("Failed to initialize OTLP config from backend", e)

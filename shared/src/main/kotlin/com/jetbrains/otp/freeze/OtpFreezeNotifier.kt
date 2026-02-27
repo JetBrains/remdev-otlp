@@ -3,6 +3,7 @@ package com.jetbrains.otp.freeze
 import com.intellij.diagnostic.FreezeNotifier
 import com.intellij.diagnostic.LogMessage
 import com.intellij.diagnostic.ThreadDump
+import com.jetbrains.otp.span.DefaultRootSpanService
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
@@ -14,7 +15,7 @@ import java.time.Instant
 
 @Suppress("UnstableApiUsage")
 class OtpFreezeNotifier : FreezeNotifier {
-    private val tracer = GlobalOpenTelemetry.get().getTracer("com.jetbrains.otp.diagnostic")
+    private val tracer = GlobalOpenTelemetry.get().getTracer(DefaultRootSpanService.DIAGNOSTIC_TRACER_NAME)
     private val stackTraceAbbreviator = StackTraceAbbreviator()
 
     companion object {

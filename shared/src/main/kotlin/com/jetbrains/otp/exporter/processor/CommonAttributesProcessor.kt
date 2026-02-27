@@ -1,10 +1,11 @@
 package com.jetbrains.otp.exporter.processor
 
+import com.jetbrains.otp.exporter.OtlpConfig
 import com.jetbrains.otp.span.CommonSpanAttributesState
 import io.opentelemetry.sdk.trace.data.SpanData
 
 object CommonAttributesProcessor : SpanProcessor {
-    override fun process(spans: Collection<SpanData>): Collection<SpanData> {
+    override fun process(spans: Collection<SpanData>, config: OtlpConfig): Collection<SpanData> {
         val attributes = CommonSpanAttributesState.snapshot()
         if (attributes.isEmpty) {
             return spans

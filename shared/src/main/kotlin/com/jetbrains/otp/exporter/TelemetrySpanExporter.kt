@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.jetbrains.otp.exporter.processor.CommonAttributesProcessor
+import com.jetbrains.otp.exporter.processor.PluginSpanFilterProcessor
 import com.jetbrains.otp.exporter.processor.SessionProcessor
 import com.jetbrains.otp.exporter.processor.SpanProcessor
 import com.jetbrains.otp.exporter.processor.SpanProcessorProvider
@@ -15,11 +16,14 @@ import java.util.concurrent.TimeUnit
 @Service(Service.Level.APP)
 class TelemetrySpanExporter {
     private val processors = createProcessors()
+    @Volatile
+    private var currentConfig: OtlpConfig = FromEnvOtlpConfig()
 
     @Volatile
     private var spanExporter: SpanExporter? = null
 
     suspend fun initExporter(config: OtlpConfig) {
+        currentConfig = config
         try {
             spanExporter = OtlpSpanExporterFactory.create(config)
         } catch (e: Exception) {
@@ -28,7 +32,11 @@ class TelemetrySpanExporter {
     }
 
     private fun createProcessors(): List<SpanProcessor> {
-        val processors = mutableListOf(SessionProcessor, CommonAttributesProcessor)
+        val processors = mutableListOf(
+            PluginSpanFilterProcessor,
+            SessionProcessor,
+            CommonAttributesProcessor
+        )
 
         SpanProcessorProvider.EP_NAME.extensionList.forEach { provider ->
             processors.addAll(provider.getProcessors())
@@ -48,8 +56,9 @@ class TelemetrySpanExporter {
     }
 
     private fun processSpans(spans: Collection<SpanData>): Collection<SpanData> {
+        val config = currentConfig
         return processors.fold(spans) { currentSpans, processor ->
-            processor.process(currentSpans)
+            processor.process(currentSpans, config)
         }
     }
 

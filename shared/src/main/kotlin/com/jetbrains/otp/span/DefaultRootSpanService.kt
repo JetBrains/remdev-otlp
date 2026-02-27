@@ -84,6 +84,8 @@ class DefaultRootSpanService : AppLifecycleListener {
             return instance.getOrCreateDefaultSpan()
         }
 
-        val TRACER = GlobalOpenTelemetry.get().getTracer("com.jetbrains.otp.diagnostic")
+        const val DIAGNOSTIC_TRACER_NAME = "com.jetbrains.otp.diagnostic"
+
+        val TRACER = GlobalOpenTelemetry.get().getTracer(DIAGNOSTIC_TRACER_NAME)
     }
 }

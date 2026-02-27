@@ -2,6 +2,7 @@ package com.jetbrains.otp.exporter.processor
 
 import com.intellij.openapi.diagnostic.Logger
 import com.jetbrains.otp.exporter.TelemetrySpanExporter
+import com.jetbrains.otp.exporter.OtlpConfig
 import io.opentelemetry.sdk.trace.data.SpanData
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -10,7 +11,7 @@ object BufferingWrapperProcessor : SpanProcessor {
     private val bufferedSpans = mutableListOf<SpanData>()
     private val tokenReceived = AtomicBoolean(false)
 
-    override fun process(spans: Collection<SpanData>): Collection<SpanData> {
+    override fun process(spans: Collection<SpanData>, config: OtlpConfig): Collection<SpanData> {
         if (tokenReceived.get()) {
             return spans
         }

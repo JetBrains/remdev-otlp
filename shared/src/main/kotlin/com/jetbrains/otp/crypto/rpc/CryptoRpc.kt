@@ -3,6 +3,7 @@ package com.jetbrains.otp.crypto.rpc
 import com.intellij.platform.rpc.RemoteApiProviderService
 import com.jetbrains.otp.crypto.EncryptedAesKey
 import com.jetbrains.otp.crypto.EncryptedData
+import com.jetbrains.otp.crypto.OtlpRemoteConfig
 import fleet.rpc.RemoteApi
 import fleet.rpc.Rpc
 import fleet.rpc.remoteApiDescriptor
@@ -16,7 +17,7 @@ interface CryptoRpc : RemoteApi<Unit> {
 
     suspend fun sendEncryptedData(data: EncryptedData): String
 
-    suspend fun getEncryptedOtlpHeaders(): EncryptedData
+    suspend fun getOtlpRemoteConfig(): OtlpRemoteConfig
 
     companion object {
         @JvmStatic

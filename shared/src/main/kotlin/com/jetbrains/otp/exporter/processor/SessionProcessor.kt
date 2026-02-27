@@ -1,6 +1,7 @@
 package com.jetbrains.otp.exporter.processor
 
 import com.intellij.openapi.diagnostic.Logger
+import com.jetbrains.otp.exporter.OtlpConfig
 import com.jetbrains.otp.exporter.TelemetrySpanExporter
 import com.jetbrains.otp.span.DefaultRootSpanService
 import io.opentelemetry.api.trace.Span
@@ -25,7 +26,7 @@ object SessionProcessor : SpanProcessor {
     @Volatile
     private var sessionSpanContext: SpanContext? = null
 
-    override fun process(spans: Collection<SpanData>): Collection<SpanData> {
+    override fun process(spans: Collection<SpanData>, config: OtlpConfig): Collection<SpanData> {
         val bufferedEvents = bufferIfNeeded(spans)
         if (bufferedEvents.isEmpty()) {
             return emptyList()
