@@ -1,9 +1,11 @@
-Filters IDE OpenTelemetry events and adds Remote Development–specific events.
-Useful for debugging issues with Remote Development setups, especially when the backend runs on the host machine.
+Unifies frontend and backend events under a single user session span.
+Adds an allowlist in settings for IJ Platform subsystem metrics.
+
+Useful to provide observability for IDEs 
 
 ## Installation
 
-This plugin  must be installed on **both frontend and backend** sides.
+This plugin must be installed on **both frontend and backend** sides.
 
 ## Configuration
 
