@@ -6,9 +6,9 @@ import com.intellij.openapi.diagnostic.Logger
 import com.jetbrains.otp.exporter.processor.CommonAttributesProcessor
 import com.jetbrains.otp.exporter.processor.PluginSpanFilterProcessor
 import com.jetbrains.otp.exporter.processor.SessionProcessor
+import com.jetbrains.otp.exporter.processor.SpanNameFilterProcessor
 import com.jetbrains.otp.exporter.processor.SpanProcessor
 import com.jetbrains.otp.exporter.processor.SpanProcessorProvider
-import com.jetbrains.otp.settings.SpanFilterService
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.util.concurrent.TimeUnit
@@ -34,6 +34,7 @@ class TelemetrySpanExporter {
     private fun createProcessors(): List<SpanProcessor> {
         val processors = mutableListOf(
             PluginSpanFilterProcessor,
+            SpanNameFilterProcessor,
             SessionProcessor,
             CommonAttributesProcessor
         )
@@ -45,10 +46,8 @@ class TelemetrySpanExporter {
     }
 
     fun sendSpans(spanData: Collection<SpanData>) {
-        val filteredSpans = filterSpans(spanData)
-        if (filteredSpans.isEmpty()) return
-
-        val processedSpans = processSpans(filteredSpans)
+        if (spanData.isEmpty()) return
+        val processedSpans = processSpans(spanData)
 
         if (processedSpans.isNotEmpty()) {
             doExport(processedSpans)
@@ -78,11 +77,6 @@ class TelemetrySpanExporter {
         } catch (e: Exception) {
             LOG.warn("Error exporting spans via OTLP", e)
         }
-    }
-
-    private fun filterSpans(spans: Collection<SpanData>): Collection<SpanData> {
-        val filterService = SpanFilterService.getInstance()
-        return spans.filter { filterService.isSpanEnabled(it.name) }
     }
 
     companion object {

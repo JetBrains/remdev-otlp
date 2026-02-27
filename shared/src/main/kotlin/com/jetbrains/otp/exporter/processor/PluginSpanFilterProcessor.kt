@@ -13,5 +13,5 @@ object PluginSpanFilterProcessor : SpanProcessor {
         }
     }
 
-    override fun getOrder(): Int = -2
+    override fun getOrder(): Int = -3
 }
