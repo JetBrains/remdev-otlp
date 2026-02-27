@@ -8,7 +8,7 @@ import com.jetbrains.otp.span.CommonSpanAttributesState
 class BackendOtlpInitializer : ProjectActivity {
     override suspend fun execute(project: Project) {
         CommonSpanAttributesState.put(CommonSpanAttributes.RD_SIDE, CommonSpanAttributes.SIDE_BACKEND)
-        val config = FromEnvOtlpConfig()
+        val config = OtlpConfigFactory.fromEnv()
         TelemetrySpanExporter.getInstance().initExporter(config)
         TelemetryMetricExporter.getInstance().initExporter(config)
     }

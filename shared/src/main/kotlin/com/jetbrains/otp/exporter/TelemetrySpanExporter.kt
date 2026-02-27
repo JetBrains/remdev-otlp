@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 class TelemetrySpanExporter {
     private val processors = createProcessors()
     @Volatile
-    private var currentConfig: OtlpConfig = FromEnvOtlpConfig()
+    private var currentConfig: OtlpConfig = OtlpConfigFactory.fromEnv()
 
     @Volatile
     private var spanExporter: SpanExporter? = null

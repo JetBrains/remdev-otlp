@@ -10,7 +10,7 @@ class FrontendOtlpInitializer : ProjectActivity {
     override suspend fun execute(project: Project) {
         try {
             val config = OtlpConfigProvider.EP_NAME.extensionList.firstOrNull()?.createConfig()
-                ?: FromEnvOtlpConfig()
+                ?: OtlpConfigFactory.fromEnv()
 
             CommonSpanAttributesState.put(CommonSpanAttributes.RD_SIDE, CommonSpanAttributes.SIDE_FRONTEND)
 

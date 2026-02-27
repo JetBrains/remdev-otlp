@@ -8,9 +8,7 @@ import java.util.concurrent.TimeUnit
 object OtlpMetricExporterFactory {
     private val LOG = Logger.getInstance(OtlpMetricExporterFactory::class.java)
 
-    suspend fun create(config: OtlpConfig): MetricExporter? {
-        config.initialize()
-
+    fun create(config: OtlpConfig): MetricExporter? {
         return try {
             val builder = OtlpHttpMetricExporter.builder()
                 .setEndpoint("${config.endpoint}/v1/metrics")

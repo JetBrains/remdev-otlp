@@ -5,38 +5,44 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.util.concurrent.TimeUnit
 
-interface OtlpConfig {
-    suspend fun initialize()
-
-    val endpoint: String
-    val headers: Map<String, String>
-    val timeoutSeconds: Long
+data class OtlpConfig(
+    val endpoint: String,
+    val headers: Map<String, String>,
+    val timeoutSeconds: Long,
     val isPluginSpanFilterEnabled: Boolean
-}
+)
 
-class FromEnvOtlpConfig(
-    override val endpoint: String = readOtlpEndpointFromPropertyOrEnv(),
-    override val timeoutSeconds: Long = 10
-) : OtlpConfig {
-    override var headers: Map<String, String> = emptyMap()
-        private set
-    override val isPluginSpanFilterEnabled: Boolean = readPluginSpanFilterEnabledFromPropertyOrEnv()
-
-    override suspend fun initialize() {
-        val headersStr = System.getProperty("otel.exporter.otlp.headers")
-            ?: System.getenv("OTEL_EXPORTER_OTLP_HEADERS")
-        headers = parseOtlpHeaders(headersStr)
+object OtlpConfigFactory {
+    fun fromEnv(timeoutSeconds: Long = 10): OtlpConfig {
+        return OtlpConfig(
+            endpoint = readOtlpEndpointFromPropertyOrEnv(),
+            headers = readOtlpHeadersFromPropertyOrEnv(),
+            timeoutSeconds = timeoutSeconds,
+            isPluginSpanFilterEnabled = readPluginSpanFilterEnabledFromPropertyOrEnv()
+        )
     }
 }
 
 const val OTLP_ENDPOINT_PROPERTY = "otel.exporter.otlp.endpoint"
 const val OTLP_ENDPOINT_ENV = "OTEL_EXPORTER_OTLP_ENDPOINT"
+const val OTLP_HEADERS_PROPERTY = "otel.exporter.otlp.headers"
+const val OTLP_HEADERS_ENV = "OTEL_EXPORTER_OTLP_HEADERS"
 const val DEFAULT_OTLP_ENDPOINT = "https://api.honeycomb.io"
 
 fun readOtlpEndpointFromPropertyOrEnv(defaultValue: String = DEFAULT_OTLP_ENDPOINT): String {
     return System.getProperty(OTLP_ENDPOINT_PROPERTY)
         ?: System.getenv(OTLP_ENDPOINT_ENV)
         ?: defaultValue
+}
+
+fun readRawOtlpHeadersFromPropertyOrEnv(defaultValue: String = ""): String {
+    return System.getProperty(OTLP_HEADERS_PROPERTY)
+        ?: System.getenv(OTLP_HEADERS_ENV)
+        ?: defaultValue
+}
+
+fun readOtlpHeadersFromPropertyOrEnv(): Map<String, String> {
+    return parseOtlpHeaders(readRawOtlpHeadersFromPropertyOrEnv())
 }
 
 fun parseOtlpHeaders(headersStr: String?): Map<String, String> {
@@ -72,9 +78,7 @@ private fun parseBoolean(value: String): Boolean? {
 object OtlpSpanExporterFactory {
     private val LOG = Logger.getInstance(OtlpSpanExporterFactory::class.java)
 
-    suspend fun create(config: OtlpConfig): SpanExporter? {
-        config.initialize()
-
+    fun create(config: OtlpConfig): SpanExporter? {
         return try {
             val builder = OtlpHttpSpanExporter.builder()
                 .setEndpoint("${config.endpoint}/v1/traces")

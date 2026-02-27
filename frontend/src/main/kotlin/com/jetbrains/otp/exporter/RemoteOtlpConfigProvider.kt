@@ -1,7 +1,9 @@
 package com.jetbrains.otp.exporter
 
 class RemoteOtlpConfigProvider : OtlpConfigProvider {
-    override fun createConfig(): OtlpConfig {
-        return PropagateFromBackendOtlpConfig()
+    private val configFactory = FromBackendOtlpConfigFactory()
+
+    override suspend fun createConfig(): OtlpConfig {
+        return configFactory.createConfig()
     }
 }
