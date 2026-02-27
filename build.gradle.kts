@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.jetbrains.otp"
-version = "1.0.7"
+version = "1.0.8"
 
 dependencies {
     intellijPlatform {
