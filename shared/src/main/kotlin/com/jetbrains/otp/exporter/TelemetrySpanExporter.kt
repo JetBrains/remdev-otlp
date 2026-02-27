@@ -4,9 +4,10 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.jetbrains.otp.exporter.processor.CommonAttributesProcessor
+import com.jetbrains.otp.exporter.processor.FrequentSpanFilterProcessor
 import com.jetbrains.otp.exporter.processor.PluginSpanFilterProcessor
 import com.jetbrains.otp.exporter.processor.SessionProcessor
-import com.jetbrains.otp.exporter.processor.SpanNameFilterProcessor
+import com.jetbrains.otp.exporter.processor.SpanScopeFilterProcessor
 import com.jetbrains.otp.exporter.processor.SpanProcessor
 import com.jetbrains.otp.exporter.processor.SpanProcessorProvider
 import io.opentelemetry.sdk.trace.data.SpanData
@@ -34,7 +35,8 @@ class TelemetrySpanExporter {
     private fun createProcessors(): List<SpanProcessor> {
         val processors = mutableListOf(
             PluginSpanFilterProcessor,
-            SpanNameFilterProcessor,
+            FrequentSpanFilterProcessor,
+            SpanScopeFilterProcessor,
             SessionProcessor,
             CommonAttributesProcessor
         )

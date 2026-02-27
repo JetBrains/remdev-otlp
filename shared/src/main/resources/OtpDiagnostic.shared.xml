@@ -14,6 +14,8 @@
         <backgroundPostStartupActivity implementation="com.jetbrains.otp.PluginInitializationService"/>
         <postStartupActivity implementation="com.jetbrains.otp.exception.handler.ErrorToSpanHandlerActivationActivity"/>
         <diagnostic.freezeNotifier implementation="com.jetbrains.otp.freeze.OtpFreezeNotifier"/>
+        <applicationService serviceInterface="com.jetbrains.otp.settings.FrequentSpanFilterService"
+                            serviceImplementation="com.jetbrains.otp.settings.OtpDiagnosticFrequentSpanFilterService"/>
     </extensions>
     <extensions defaultExtensionNs="com.jetbrains.otp.diagnostic">
         <allowedMetricsProvider implementation="com.jetbrains.otp.exporter.HardcodedListAllowedMetricsProvider"/>

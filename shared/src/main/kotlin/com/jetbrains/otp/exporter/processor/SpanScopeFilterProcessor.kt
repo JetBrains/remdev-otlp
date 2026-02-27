@@ -1,13 +1,13 @@
 package com.jetbrains.otp.exporter.processor
 
 import com.jetbrains.otp.exporter.OtlpConfig
-import com.jetbrains.otp.settings.SpanFilterService
+import com.jetbrains.otp.settings.OtpDiagnosticSettings
 import io.opentelemetry.sdk.trace.data.SpanData
 
-object SpanNameFilterProcessor : SpanProcessor {
+object SpanScopeFilterProcessor : SpanProcessor {
     override fun process(spans: Collection<SpanData>, config: OtlpConfig): Collection<SpanData> {
-        val filterService = SpanFilterService.getInstance()
-        return spans.filter { span -> filterService.isSpanEnabled(span.name) }
+        val settings = OtpDiagnosticSettings.getInstance()
+        return spans.filter { span -> settings.isScopeEnabled(span.instrumentationScopeInfo.name) }
     }
 
     override fun getOrder(): Int = -2

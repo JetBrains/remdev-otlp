@@ -27,7 +27,5 @@
             bundle="messages.OtpDiagnosticBundle"
             key="settings.displayName"/>
 
-        <applicationService serviceInterface="com.jetbrains.otp.settings.SpanFilterService"
-                            serviceImplementation="com.jetbrains.otp.settings.FrontendSpanFilterService"/>
     </extensions>
 </idea-plugin>
