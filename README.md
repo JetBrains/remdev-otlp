@@ -9,7 +9,7 @@ This plugin must be installed on **both frontend and backend** sides.
 
 ## Configuration
 
-### Required Configuration
+### Backend OTLP Headers (required)
 
 Set your OTLP headers **on the backend only** using either:
 
@@ -27,13 +27,38 @@ Headers follow the standard [OTEL_EXPORTER_OTLP_HEADERS](https://opentelemetry.i
 
 The plugin automatically propagates the headers securely from backend to frontend via encrypted RPC.
 
-### Optional Configuration
+### Backend OTLP Endpoint (optional)
 
-**OTLP Endpoint:**
+**Environment Variable:**
 ```bash
 export OTEL_EXPORTER_OTLP_ENDPOINT=https://api.honeycomb.io
 ```
+**OR System Property:**
+```bash
+-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io
+```
 Default: `https://api.honeycomb.io`
+
+### Plugin Span Filter Source
+
+`isPluginSpanFilterEnabled` is resolved in this order:
+1. System property/env override (authoritative):
+   - `rdct.diagnostic.otlp.plugin.span.filter.enabled`
+   - `RDCT_DIAGNOSTIC_OTLP_PLUGIN_SPAN_FILTER_ENABLED`
+2. Saved plugin setting (`OpenTelemetry Diagnostic` settings UI)
+3. Default: `true`
+
+- `true`: keep only spans from this diagnostic plugin tracer (`com.jetbrains.otp.diagnostic`)
+- `false`: do not apply plugin-tracer-only filtering at this stage
+
+### Filtering Settings UI
+
+In `Settings | Tools | OpenTelemetry Diagnostic`, you can configure:
+- `Show only a short list of diagnostic spans` (plugin span filter)
+- `Enable frequent spans`
+- hierarchical span categories (parent/child checkboxes)
+
+Category and toggle settings are synced frontend -> backend.
 
 ## Spans
 
