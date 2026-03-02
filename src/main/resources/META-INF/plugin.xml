@@ -18,7 +18,7 @@
         Configuration:
         <ul>
             <li>Set OTEL_EXPORTER_OTLP_HEADERS environment variable or otel.exporter.otlp.headers system property</li>
-            <li>Optional: Set OTEL_EXPORTER_OTLP_ENDPOINT environment variable (default: https://api.honeycomb.io)</li>
+            <li>Optional: Set OTEL_EXPORTER_OTLP_ENDPOINT environment variable (default: http://localhost)</li>
         </ul>
     ]]></description>
 

@@ -36,6 +36,6 @@ tasks {
     runIde {
          systemProperty("rdct.diagnostic.otlp", "true")
          systemProperty("idea.diagnostic.opentelemetry.otlp", "true")
-         systemProperty("honeycomb.api.key", System.getenv("HONEYCOMB_API_KEY") ?: "")
+         systemProperty("otel.exporter.otlp.endpoint", System.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") ?: "http://localhost")
     }
 }

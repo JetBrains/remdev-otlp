@@ -30,7 +30,7 @@ const val OTLP_ENDPOINT_PROPERTY = "otel.exporter.otlp.endpoint"
 const val OTLP_ENDPOINT_ENV = "OTEL_EXPORTER_OTLP_ENDPOINT"
 const val OTLP_HEADERS_PROPERTY = "otel.exporter.otlp.headers"
 const val OTLP_HEADERS_ENV = "OTEL_EXPORTER_OTLP_HEADERS"
-const val DEFAULT_OTLP_ENDPOINT = "https://api.honeycomb.io"
+const val DEFAULT_OTLP_ENDPOINT = "http://localhost"
 
 fun readOtlpEndpointFromPropertyOrEnv(defaultValue: String = DEFAULT_OTLP_ENDPOINT): String {
     return System.getProperty(OTLP_ENDPOINT_PROPERTY)

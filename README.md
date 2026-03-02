@@ -15,15 +15,15 @@ Set your OTLP headers **on the backend only** using either:
 
 **Environment Variable:**
 ```bash
-export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your_api_key,x-honeycomb-dataset=your_dataset"
+export OTEL_EXPORTER_OTLP_HEADERS="authorization=Bearer your_token"
 ```
 
 **OR System Property:**
 ```
--Dotel.exporter.otlp.headers=x-honeycomb-team=your_api_key,x-honeycomb-dataset=your_dataset
+-Dotel.exporter.otlp.headers=authorization=Bearer your_token
 ```
 
-Headers follow the standard [OTEL_EXPORTER_OTLP_HEADERS](https://opentelemetry.io/docs/specs/otel/protocol/exporter/) format: comma-separated `key=value` pairs. This works with any OTLP-compatible backend (Honeycomb, Jaeger, Grafana, etc.).
+Headers follow the standard [OTEL_EXPORTER_OTLP_HEADERS](https://opentelemetry.io/docs/specs/otel/protocol/exporter/) format: comma-separated `key=value` pairs. This works with any OTLP-compatible backend (Jaeger, Grafana, OpenTelemetry Collector, etc.).
 
 The plugin automatically propagates the headers securely from backend to frontend via encrypted RPC.
 
@@ -31,13 +31,13 @@ The plugin automatically propagates the headers securely from backend to fronten
 
 **Environment Variable:**
 ```bash
-export OTEL_EXPORTER_OTLP_ENDPOINT=https://api.honeycomb.io
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost
 ```
 **OR System Property:**
 ```bash
--Dotel.exporter.otlp.endpoint=https://api.honeycomb.io
+-Dotel.exporter.otlp.endpoint=http://localhost
 ```
-Default: `https://api.honeycomb.io`
+Default: `http://localhost`
 
 ### Plugin Span Filter Source
 
