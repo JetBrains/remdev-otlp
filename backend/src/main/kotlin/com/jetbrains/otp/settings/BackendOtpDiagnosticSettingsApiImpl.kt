@@ -7,11 +7,13 @@ internal class BackendOtpDiagnosticSettingsApiImpl : OtpDiagnosticSettingsApi {
         disabledCategories: Set<String>,
         frequentSpansEnabled: Boolean,
         pluginSpanFilterEnabled: Boolean,
+        metricsExportEnabled: Boolean,
     ) {
         OtpDiagnosticSettings.getInstance().syncFilteringSettings(
             disabledCategories = disabledCategories,
             frequentSpansEnabled = frequentSpansEnabled,
             pluginSpanFilterEnabled = pluginSpanFilterEnabled,
+            metricsExportEnabled = metricsExportEnabled,
         )
     }
 }

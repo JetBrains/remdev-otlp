@@ -10,7 +10,8 @@ data class OtlpConfig(
     val endpoint: String,
     val headers: Map<String, String>,
     val timeoutSeconds: Long,
-    val isPluginSpanFilterEnabled: Boolean
+    val isPluginSpanFilterEnabled: Boolean,
+    val isMetricsExportEnabled: Boolean
 )
 
 object OtlpConfigFactory {
@@ -19,7 +20,8 @@ object OtlpConfigFactory {
             endpoint = readOtlpEndpointFromPropertyOrEnv(),
             headers = readOtlpHeadersFromPropertyOrEnv(),
             timeoutSeconds = timeoutSeconds,
-            isPluginSpanFilterEnabled = OtpDiagnosticSettings.getInstance().isPluginSpanFilterEnabledEffective()
+            isPluginSpanFilterEnabled = OtpDiagnosticSettings.getInstance().pluginFilterEnabledEffective(),
+            isMetricsExportEnabled = OtpDiagnosticSettings.getInstance().metricsExportEnabledEffective()
         )
     }
 }
@@ -56,8 +58,10 @@ fun parseOtlpHeaders(headersStr: String?): Map<String, String> {
 
 const val PLUGIN_SPAN_FILTER_ENABLED_PROPERTY = "rdct.diagnostic.otlp.plugin.span.filter.enabled"
 const val PLUGIN_SPAN_FILTER_ENABLED_ENV = "RDCT_DIAGNOSTIC_OTLP_PLUGIN_SPAN_FILTER_ENABLED"
+const val METRICS_EXPORT_ENABLED_PROPERTY = "rdct.diagnostic.otlp.metrics.enabled"
+const val METRICS_EXPORT_ENABLED_ENV = "RDCT_DIAGNOSTIC_OTLP_METRICS_ENABLED"
 
-fun readPluginSpanFilterEnabledFromPropertyOrEnv(defaultValue: Boolean = true): Boolean {
+fun readPluginFilterEnabled(defaultValue: Boolean = true): Boolean {
     return readBooleanFromPropertyOrEnv(
         propertyName = PLUGIN_SPAN_FILTER_ENABLED_PROPERTY,
         envName = PLUGIN_SPAN_FILTER_ENABLED_ENV,
@@ -65,9 +69,22 @@ fun readPluginSpanFilterEnabledFromPropertyOrEnv(defaultValue: Boolean = true): 
     )
 }
 
-fun isPluginSpanFilterDefinedInPropertyOrEnv(): Boolean {
+fun hasPluginFilterOverride(): Boolean {
     return System.getProperty(PLUGIN_SPAN_FILTER_ENABLED_PROPERTY) != null
         || System.getenv(PLUGIN_SPAN_FILTER_ENABLED_ENV) != null
+}
+
+fun readMetricsExportEnabled(defaultValue: Boolean = true): Boolean {
+    return readBooleanFromPropertyOrEnv(
+        propertyName = METRICS_EXPORT_ENABLED_PROPERTY,
+        envName = METRICS_EXPORT_ENABLED_ENV,
+        defaultValue = defaultValue
+    )
+}
+
+fun hasMetricsExportOverride(): Boolean {
+    return System.getProperty(METRICS_EXPORT_ENABLED_PROPERTY) != null
+        || System.getenv(METRICS_EXPORT_ENABLED_ENV) != null
 }
 
 private fun readBooleanFromPropertyOrEnv(propertyName: String, envName: String, defaultValue: Boolean): Boolean {

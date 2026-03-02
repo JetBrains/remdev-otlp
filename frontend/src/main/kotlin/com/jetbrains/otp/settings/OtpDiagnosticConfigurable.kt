@@ -21,21 +21,30 @@ class OtpDiagnosticConfigurable : Configurable {
     private val categoryCheckboxes = mutableMapOf<String, JBCheckBox>()
     private var frequentSpansCheckBox: JBCheckBox? = null
     private var pluginSpanFilterCheckBox: JBCheckBox? = null
+    private var metricsExportEnabledCheckBox: JBCheckBox? = null
     private val coroutineScope = getFrontendCoroutineScope()
 
     override fun getDisplayName(): String = OtpDiagnosticBundle.message("settings.displayName")
 
     override fun createComponent(): JComponent {
         categoryCheckboxes.clear()
-        val pluginSpanFilterOverridden = settings.isPluginSpanFilterOverriddenByPropertyOrEnv()
+        val pluginSpanFilterOverridden = settings.isPluginFilterOverridden()
+        val metricsExportEnabledOverridden = settings.isMetricsExportOverridden()
         frequentSpansCheckBox = JBCheckBox(OtpDiagnosticBundle.message("settings.checkbox.frequentSpans")).apply {
             isSelected = settings.isFrequentSpansEnabled()
         }
         pluginSpanFilterCheckBox = JBCheckBox(OtpDiagnosticBundle.message("settings.checkbox.pluginSpanFilter")).apply {
-            isSelected = settings.isPluginSpanFilterEnabledEffective()
+            isSelected = settings.pluginFilterEnabledEffective()
             isEnabled = !pluginSpanFilterOverridden
             if (pluginSpanFilterOverridden) {
                 toolTipText = OtpDiagnosticBundle.message("settings.label.pluginSpanFilter.overridden")
+            }
+        }
+        metricsExportEnabledCheckBox = JBCheckBox(OtpDiagnosticBundle.message("settings.checkbox.enableMetricsExport")).apply {
+            isSelected = settings.metricsExportEnabledEffective()
+            isEnabled = !metricsExportEnabledOverridden
+            if (metricsExportEnabledOverridden) {
+                toolTipText = OtpDiagnosticBundle.message("settings.label.enableMetricsExport.overridden")
             }
         }
 
@@ -46,6 +55,7 @@ class OtpDiagnosticConfigurable : Configurable {
                 isOpaque = false
                 add(frequentSpansCheckBox)
                 add(pluginSpanFilterCheckBox)
+                add(metricsExportEnabledCheckBox)
             }
             add(checksPanel, BorderLayout.NORTH)
             add(JBLabel(OtpDiagnosticBundle.message("settings.label.frequentSpans.description")), BorderLayout.CENTER)
@@ -137,24 +147,35 @@ class OtpDiagnosticConfigurable : Configurable {
 
     override fun isModified(): Boolean {
         val frequentSpansModified = frequentSpansCheckBox?.isSelected != settings.isFrequentSpansEnabled()
-        val pluginSpanFilterModified = !settings.isPluginSpanFilterOverriddenByPropertyOrEnv()
+        val pluginSpanFilterModified = !settings.isPluginFilterOverridden()
             && pluginSpanFilterCheckBox?.isSelected != settings.isPluginSpanFilterEnabled()
+        val metricsExportEnabledModified = !settings.isMetricsExportOverridden()
+            && metricsExportEnabledCheckBox?.isSelected != settings.isMetricsExportEnabled()
         val persistedKnownDisabled = settings.getDisabledCategories().intersect(SpanCategoryRegistry.allCategories)
-        return frequentSpansModified || pluginSpanFilterModified || collectKnownDisabledCategories() != persistedKnownDisabled
+        return frequentSpansModified
+            || pluginSpanFilterModified
+            || metricsExportEnabledModified
+            || collectKnownDisabledCategories() != persistedKnownDisabled
     }
 
     override fun apply() {
         val disabledCategories = collectKnownDisabledCategories() + collectUnknownDisabledCategories()
         val frequentSpansEnabled = frequentSpansCheckBox?.isSelected ?: settings.isFrequentSpansEnabled()
-        val pluginSpanFilterEnabled = if (settings.isPluginSpanFilterOverriddenByPropertyOrEnv()) {
-            settings.isPluginSpanFilterEnabledEffective()
+        val pluginSpanFilterEnabled = if (settings.isPluginFilterOverridden()) {
+            settings.pluginFilterEnabledEffective()
         } else {
             pluginSpanFilterCheckBox?.isSelected ?: settings.isPluginSpanFilterEnabled()
+        }
+        val metricsExportEnabled = if (settings.isMetricsExportOverridden()) {
+            settings.metricsExportEnabledEffective()
+        } else {
+            metricsExportEnabledCheckBox?.isSelected ?: settings.isMetricsExportEnabled()
         }
         settings.syncFilteringSettings(
             disabledCategories = disabledCategories,
             frequentSpansEnabled = frequentSpansEnabled,
             pluginSpanFilterEnabled = pluginSpanFilterEnabled,
+            metricsExportEnabled = metricsExportEnabled,
         )
 
         coroutineScope.launch {
@@ -163,13 +184,15 @@ class OtpDiagnosticConfigurable : Configurable {
                 disabledCategories = disabledCategories,
                 frequentSpansEnabled = frequentSpansEnabled,
                 pluginSpanFilterEnabled = pluginSpanFilterEnabled,
+                metricsExportEnabled = metricsExportEnabled,
             )
         }
     }
 
     override fun reset() {
         frequentSpansCheckBox?.isSelected = settings.isFrequentSpansEnabled()
-        pluginSpanFilterCheckBox?.isSelected = settings.isPluginSpanFilterEnabledEffective()
+        pluginSpanFilterCheckBox?.isSelected = settings.pluginFilterEnabledEffective()
+        metricsExportEnabledCheckBox?.isSelected = settings.metricsExportEnabledEffective()
         categoryCheckboxes.forEach { (categoryId, checkbox) ->
             checkbox.isSelected = settings.isCategoryEnabled(categoryId)
         }

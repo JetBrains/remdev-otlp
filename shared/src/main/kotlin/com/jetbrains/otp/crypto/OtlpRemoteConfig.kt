@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class OtlpRemoteConfig(
     val endpoint: String,
     val encryptedHeaders: EncryptedData,
-    val isPluginSpanFilterEnabled: Boolean
+    val pluginFilterOverride: Boolean?,
+    val metricsExportOverride: Boolean?
 )
