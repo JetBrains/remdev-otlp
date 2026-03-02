@@ -51,6 +51,19 @@ Default: `https://api.honeycomb.io`
 - `true`: keep only spans from this diagnostic plugin tracer (`com.jetbrains.otp.diagnostic`)
 - `false`: do not apply plugin-tracer-only filtering at this stage
 
+### Metrics Export Source
+
+`isMetricsExportEnabled` is resolved in this order:
+1. System property/env override (authoritative):
+   - `rdct.diagnostic.otlp.metrics.enabled`
+   - `RDCT_DIAGNOSTIC_OTLP_METRICS_ENABLED`
+2. Saved plugin setting (`OpenTelemetry Diagnostic` settings UI)
+3. Default: `true`
+
+Accepted values for both boolean overrides (`plugin span filter` and `metrics export`) are only:
+- `true` enable metrics export
+- `false` disable metrics export
+
 ### Filtering Settings UI
 
 In `Settings | Tools | OpenTelemetry Diagnostic`, you can configure:
