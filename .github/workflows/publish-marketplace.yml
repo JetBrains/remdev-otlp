@@ -1,0 +1,96 @@
+name: Publish to JetBrains Marketplace
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'GitHub release tag to publish (leave empty for latest stable release)'
+        required: false
+        default: ''
+      asset_name:
+        description: 'Exact release asset name to publish (leave empty for first *.zip)'
+        required: false
+        default: ''
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Resolve release and asset
+        id: resolve
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const inputTag = `${{ github.event.inputs.release_tag || '' }}`.trim();
+            const inputAssetName = `${{ github.event.inputs.asset_name || '' }}`.trim();
+
+            let release;
+            if (inputTag) {
+              const response = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: inputTag,
+              });
+              release = response.data;
+            } else {
+              const response = await github.rest.repos.getLatestRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              release = response.data;
+            }
+
+            if (release.draft || release.prerelease) {
+              core.setFailed(
+                `Selected release ${release.tag_name} is not publishable (draft=${release.draft}, prerelease=${release.prerelease}).`
+              );
+              return;
+            }
+
+            let asset;
+            if (inputAssetName) {
+              asset = release.assets.find((a) => a.name === inputAssetName);
+              if (!asset) {
+                core.setFailed(
+                  `Asset '${inputAssetName}' was not found in release ${release.tag_name}.`
+                );
+                return;
+              }
+            } else {
+              asset = release.assets.find((a) => a.name.endsWith('.zip'));
+              if (!asset) {
+                core.setFailed(`No .zip asset found in release ${release.tag_name}.`);
+                return;
+              }
+            }
+
+            core.info(`Selected tag: ${release.tag_name}`);
+            core.info(`Selected asset: ${asset.name}`);
+            core.setOutput('tag', release.tag_name);
+            core.setOutput('asset_id', String(asset.id));
+            core.setOutput('asset_name', asset.name);
+
+      - name: Download release ZIP asset
+        env:
+          ASSET_ID: ${{ steps.resolve.outputs.asset_id }}
+        run: |
+          curl --fail-with-body \
+            -L \
+            -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/octet-stream" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/assets/${ASSET_ID}" \
+            -o plugin.zip
+
+          test -s plugin.zip
+          echo "Downloaded plugin asset '${{ steps.resolve.outputs.asset_name }}' from tag '${{ steps.resolve.outputs.tag }}'."
+
+      - name: Upload to JetBrains Marketplace
+        run: |
+          curl --fail-with-body \
+            -H "Authorization: Bearer ${{ secrets.JETBRAINS_MARKETPLACE_TOKEN }}" \
+            -F "xmlId=com.jetbrains.otp.diagnostic" \
+            -F "file=@plugin.zip" \
+            "https://plugins.jetbrains.com/api/updates/upload"
