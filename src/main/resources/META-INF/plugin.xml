@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.jetbrains.otp.diagnostic</id>
-    <name>OpenTelemetry Diagnostic (RemDev)</name>
+    <name>OpenTelemetry Diagnostic (Remote Development)</name>
     <vendor>JetBrains</vendor>
     <version>1.0.7</version>
 
