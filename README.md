@@ -5,7 +5,7 @@ Useful to provide observability for IDEs
 
 ## Installation
 
-This plugin must be installed on **both frontend and backend** sides.
+This plugin works only in Remote Development IDE-s while being installed on **both frontend and backend** sides.
 
 ## Configuration
 
