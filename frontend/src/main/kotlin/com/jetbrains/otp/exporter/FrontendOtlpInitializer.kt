@@ -13,6 +13,7 @@ class FrontendOtlpInitializer : ProjectActivity {
                 ?: OtlpConfigFactory.fromEnv()
 
             CommonSpanAttributesState.put(CommonSpanAttributes.RD_SIDE, CommonSpanAttributes.SIDE_FRONTEND)
+            CpuUsageMetricReporter.getInstance().start(CommonSpanAttributes.SIDE_FRONTEND)
 
             TelemetrySpanExporter.getInstance().initExporter(config)
             TelemetryMetricExporter.getInstance().initExporter(config)
