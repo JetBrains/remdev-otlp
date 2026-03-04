@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.jetbrains.otp.span.CommonSpanAttributes
+import com.jetbrains.otp.span.CommonSpanAttributesState
 import com.sun.management.OperatingSystemMXBean
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
@@ -33,20 +34,19 @@ class CpuUsageMetricReporter {
 
         try {
             val meter = GlobalOpenTelemetry.get().getMeter(METER_NAME)
-            val sideAttributes = buildSideAttributes(rdSide)
 
             processCpuGauge = meter.gaugeBuilder(PROCESS_CPU_UTILIZATION_METRIC)
                 .setDescription("Recent CPU utilization of the current process")
                 .setUnit("1")
                 .buildWithCallback { measurement ->
-                    recordCpuLoad(measurement, mxBean.processCpuLoad, sideAttributes)
+                    recordCpuLoad(measurement, mxBean.processCpuLoad, buildCommonMetricAttributes(rdSide))
                 }
 
             systemCpuGauge = meter.gaugeBuilder(SYSTEM_CPU_UTILIZATION_METRIC)
                 .setDescription("Recent CPU utilization of the host system")
                 .setUnit("1")
                 .buildWithCallback { measurement ->
-                    recordCpuLoad(measurement, mxBean.cpuLoad, sideAttributes)
+                    recordCpuLoad(measurement, mxBean.cpuLoad, buildCommonMetricAttributes(rdSide))
                 }
         } catch (e: Exception) {
             started.set(false)
@@ -68,11 +68,6 @@ class CpuUsageMetricReporter {
         return rawCpuLoad.takeIf { it in 0.0..1.0 }
     }
 
-    private fun buildSideAttributes(rdSide: String): Attributes {
-        if (rdSide.isBlank()) return Attributes.empty()
-        return Attributes.of(AttributeKey.stringKey(CommonSpanAttributes.RD_SIDE), rdSide)
-    }
-
     companion object {
         const val PROCESS_CPU_UTILIZATION_METRIC = "rdct.process.cpu.utilization"
         const val SYSTEM_CPU_UTILIZATION_METRIC = "rdct.system.cpu.utilization"
@@ -82,4 +77,18 @@ class CpuUsageMetricReporter {
 
         fun getInstance(): CpuUsageMetricReporter = service()
     }
+}
+
+internal fun buildCommonMetricAttributes(rdSide: String): Attributes {
+    val commonAttributes = CommonSpanAttributesState.snapshotMap()
+    if (commonAttributes.isEmpty() && rdSide.isBlank()) return Attributes.empty()
+
+    val builder = Attributes.builder()
+    commonAttributes.forEach { (key, value) ->
+        builder.put(AttributeKey.stringKey(key), value)
+    }
+    if (rdSide.isNotBlank()) {
+        builder.put(AttributeKey.stringKey(CommonSpanAttributes.RD_SIDE), rdSide)
+    }
+    return builder.build()
 }

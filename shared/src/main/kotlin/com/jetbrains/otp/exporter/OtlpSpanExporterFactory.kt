@@ -60,6 +60,10 @@ const val PLUGIN_SPAN_FILTER_ENABLED_PROPERTY = "rdct.diagnostic.otlp.plugin.spa
 const val PLUGIN_SPAN_FILTER_ENABLED_ENV = "RDCT_DIAGNOSTIC_OTLP_PLUGIN_SPAN_FILTER_ENABLED"
 const val METRICS_EXPORT_ENABLED_PROPERTY = "rdct.diagnostic.otlp.metrics.enabled"
 const val METRICS_EXPORT_ENABLED_ENV = "RDCT_DIAGNOSTIC_OTLP_METRICS_ENABLED"
+const val FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_PROPERTY =
+    "rdct.diagnostic.otlp.frequent.performance.metrics.reporting.enabled"
+const val FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_ENV =
+    "RDCT_DIAGNOSTIC_OTLP_FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED"
 
 fun readPluginFilterEnabled(defaultValue: Boolean = true): Boolean {
     return readBooleanFromPropertyOrEnv(
@@ -85,6 +89,18 @@ fun readMetricsExportEnabled(defaultValue: Boolean = true): Boolean {
 fun hasMetricsExportOverride(): Boolean {
     return System.getProperty(METRICS_EXPORT_ENABLED_PROPERTY) != null
         || System.getenv(METRICS_EXPORT_ENABLED_ENV) != null
+}
+
+fun readFrequentPerformanceMetricsReportingEnabled(defaultValue: Boolean = false): Boolean {
+    val rawValue = System.getProperty(FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_PROPERTY)
+        ?: System.getenv(FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_ENV)
+        ?: return defaultValue
+    return parseBoolean(rawValue) ?: defaultValue
+}
+
+fun hasFrequentPerformanceMetricsReportingOverride(): Boolean {
+    return System.getProperty(FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_PROPERTY) != null
+        || System.getenv(FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_ENV) != null
 }
 
 private fun readBooleanFromPropertyOrEnv(propertyName: String, envName: String, defaultValue: Boolean): Boolean {

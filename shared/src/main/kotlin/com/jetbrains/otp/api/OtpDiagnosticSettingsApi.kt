@@ -15,6 +15,7 @@ interface OtpDiagnosticSettingsApi : RemoteApi<Unit> {
         frequentSpansEnabled: Boolean,
         pluginSpanFilterEnabled: Boolean,
         metricsExportEnabled: Boolean,
+        frequentPerformanceMetricsReportingEnabled: Boolean,
     )
 
     companion object {

@@ -1,6 +1,7 @@
 package com.jetbrains.otp.crypto
 
 import com.jetbrains.otp.crypto.rpc.CryptoRpc
+import com.jetbrains.otp.exporter.hasFrequentPerformanceMetricsReportingOverride
 import com.jetbrains.otp.exporter.hasMetricsExportOverride
 import com.jetbrains.otp.exporter.hasPluginFilterOverride
 import com.jetbrains.otp.exporter.readOtlpEndpointFromPropertyOrEnv
@@ -23,11 +24,17 @@ internal class CryptoRpcImpl : CryptoRpc {
         val settings = OtpDiagnosticSettings.getInstance()
         val pluginFilterOverride = if (hasPluginFilterOverride()) settings.pluginFilterEnabledEffective() else null
         val metricsExportOverride = if (hasMetricsExportOverride()) settings.metricsExportEnabledEffective() else null
+        val frequentPerformanceMetricsReportingOverride = if (hasFrequentPerformanceMetricsReportingOverride()) {
+            settings.frequentPerformanceMetricsReportingEnabledEffective()
+        } else {
+            null
+        }
         return OtlpRemoteConfig(
             endpoint = readOtlpEndpointFromPropertyOrEnv(),
             encryptedHeaders = cryptoService.encryptData(headersStr),
             pluginFilterOverride = pluginFilterOverride,
             metricsExportOverride = metricsExportOverride,
+            frequentPerformanceMetricsReportingOverride = frequentPerformanceMetricsReportingOverride,
         )
     }
 }

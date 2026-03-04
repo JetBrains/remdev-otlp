@@ -5,8 +5,10 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
+import com.jetbrains.otp.exporter.hasFrequentPerformanceMetricsReportingOverride
 import com.jetbrains.otp.exporter.hasMetricsExportOverride
 import com.jetbrains.otp.exporter.hasPluginFilterOverride
+import com.jetbrains.otp.exporter.readFrequentPerformanceMetricsReportingEnabled
 import com.jetbrains.otp.exporter.readMetricsExportEnabled
 import com.jetbrains.otp.exporter.readPluginFilterEnabled
 
@@ -22,12 +24,15 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
     private var backendPluginFilterOverride: Boolean? = null
     @Volatile
     private var backendMetricsExportOverride: Boolean? = null
+    @Volatile
+    private var backendFrequentPerformanceMetricsReportingOverride: Boolean? = null
 
     data class State(
         var disabledCategories: MutableSet<String> = mutableSetOf(),
         var frequentSpansEnabled: Boolean = false,
         var pluginSpanFilterEnabled: Boolean = true,
         var metricsExportEnabled: Boolean = true,
+        var frequentPerformanceMetricsReportingEnabled: Boolean = false,
     )
 
     override fun getState(): State = state
@@ -41,12 +46,14 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
         frequentSpansEnabled: Boolean,
         pluginSpanFilterEnabled: Boolean,
         metricsExportEnabled: Boolean,
+        frequentPerformanceMetricsReportingEnabled: Boolean,
     ) {
         state.disabledCategories.clear()
         state.disabledCategories.addAll(disabledCategories)
         state.frequentSpansEnabled = frequentSpansEnabled
         state.pluginSpanFilterEnabled = pluginSpanFilterEnabled
         state.metricsExportEnabled = metricsExportEnabled
+        state.frequentPerformanceMetricsReportingEnabled = frequentPerformanceMetricsReportingEnabled
     }
 
     fun updateBackendPluginFilterOverride(pluginFilterOverride: Boolean?) {
@@ -55,6 +62,10 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
 
     fun updateBackendMetricsExportOverride(metricsExportOverride: Boolean?) {
         backendMetricsExportOverride = metricsExportOverride
+    }
+
+    fun updateBackendFrequentPerformanceMetricsReportingOverride(frequentPerformanceMetricsReportingOverride: Boolean?) {
+        backendFrequentPerformanceMetricsReportingOverride = frequentPerformanceMetricsReportingOverride
     }
 
     fun isCategoryEnabled(categoryId: String): Boolean {
@@ -97,6 +108,19 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
 
     fun isMetricsExportOverridden(): Boolean {
         return backendMetricsExportOverride != null || hasMetricsExportOverride()
+    }
+
+    fun isFrequentPerformanceMetricsReportingEnabled(): Boolean {
+        return state.frequentPerformanceMetricsReportingEnabled
+    }
+
+    fun frequentPerformanceMetricsReportingEnabledEffective(): Boolean {
+        backendFrequentPerformanceMetricsReportingOverride?.let { return it }
+        return readFrequentPerformanceMetricsReportingEnabled(state.frequentPerformanceMetricsReportingEnabled)
+    }
+
+    fun isFrequentPerformanceMetricsReportingOverridden(): Boolean {
+        return backendFrequentPerformanceMetricsReportingOverride != null || hasFrequentPerformanceMetricsReportingOverride()
     }
 
     companion object {
