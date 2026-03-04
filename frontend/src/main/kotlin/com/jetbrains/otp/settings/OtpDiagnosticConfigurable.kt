@@ -22,6 +22,7 @@ class OtpDiagnosticConfigurable : Configurable {
     private var frequentSpansCheckBox: JBCheckBox? = null
     private var pluginSpanFilterCheckBox: JBCheckBox? = null
     private var metricsExportEnabledCheckBox: JBCheckBox? = null
+    private var cpuWindowMetricsReportingCheckBox: JBCheckBox? = null
     private val coroutineScope = getFrontendCoroutineScope()
 
     override fun getDisplayName(): String = OtpDiagnosticBundle.message("settings.displayName")
@@ -30,6 +31,7 @@ class OtpDiagnosticConfigurable : Configurable {
         categoryCheckboxes.clear()
         val pluginSpanFilterOverridden = settings.isPluginFilterOverridden()
         val metricsExportEnabledOverridden = settings.isMetricsExportOverridden()
+        val cpuWindowMetricsReportingOverridden = settings.isCpuWindowMetricsReportingOverridden()
         frequentSpansCheckBox = JBCheckBox(OtpDiagnosticBundle.message("settings.checkbox.frequentSpans")).apply {
             isSelected = settings.isFrequentSpansEnabled()
         }
@@ -47,6 +49,15 @@ class OtpDiagnosticConfigurable : Configurable {
                 toolTipText = OtpDiagnosticBundle.message("settings.label.enableMetricsExport.overridden")
             }
         }
+        cpuWindowMetricsReportingCheckBox = JBCheckBox(
+            OtpDiagnosticBundle.message("settings.checkbox.enableCpuWindowMetricsReporting")
+        ).apply {
+            isSelected = settings.cpuWindowMetricsReportingEnabledEffective()
+            isEnabled = !cpuWindowMetricsReportingOverridden
+            if (cpuWindowMetricsReportingOverridden) {
+                toolTipText = OtpDiagnosticBundle.message("settings.label.enableCpuWindowMetricsReporting.overridden")
+            }
+        }
 
         val frequentSpansPanel = JPanel(BorderLayout(JBUI.scale(8), JBUI.scale(8))).apply {
             border = BorderFactory.createTitledBorder(OtpDiagnosticBundle.message("settings.group.frequentSpans"))
@@ -56,6 +67,7 @@ class OtpDiagnosticConfigurable : Configurable {
                 add(frequentSpansCheckBox)
                 add(pluginSpanFilterCheckBox)
                 add(metricsExportEnabledCheckBox)
+                add(cpuWindowMetricsReportingCheckBox)
             }
             add(checksPanel, BorderLayout.NORTH)
             add(JBLabel(OtpDiagnosticBundle.message("settings.label.frequentSpans.description")), BorderLayout.CENTER)
@@ -151,10 +163,13 @@ class OtpDiagnosticConfigurable : Configurable {
             && pluginSpanFilterCheckBox?.isSelected != settings.isPluginSpanFilterEnabled()
         val metricsExportEnabledModified = !settings.isMetricsExportOverridden()
             && metricsExportEnabledCheckBox?.isSelected != settings.isMetricsExportEnabled()
+        val cpuWindowMetricsReportingModified = !settings.isCpuWindowMetricsReportingOverridden()
+            && cpuWindowMetricsReportingCheckBox?.isSelected != settings.isCpuWindowMetricsReportingEnabled()
         val persistedKnownDisabled = settings.getDisabledCategories().intersect(SpanCategoryRegistry.allCategories)
         return frequentSpansModified
             || pluginSpanFilterModified
             || metricsExportEnabledModified
+            || cpuWindowMetricsReportingModified
             || collectKnownDisabledCategories() != persistedKnownDisabled
     }
 
@@ -171,11 +186,17 @@ class OtpDiagnosticConfigurable : Configurable {
         } else {
             metricsExportEnabledCheckBox?.isSelected ?: settings.isMetricsExportEnabled()
         }
+        val cpuWindowMetricsReportingEnabled = if (settings.isCpuWindowMetricsReportingOverridden()) {
+            settings.cpuWindowMetricsReportingEnabledEffective()
+        } else {
+            cpuWindowMetricsReportingCheckBox?.isSelected ?: settings.isCpuWindowMetricsReportingEnabled()
+        }
         settings.syncFilteringSettings(
             disabledCategories = disabledCategories,
             frequentSpansEnabled = frequentSpansEnabled,
             pluginSpanFilterEnabled = pluginSpanFilterEnabled,
             metricsExportEnabled = metricsExportEnabled,
+            cpuWindowMetricsReportingEnabled = cpuWindowMetricsReportingEnabled,
         )
 
         coroutineScope.launch {
@@ -185,6 +206,7 @@ class OtpDiagnosticConfigurable : Configurable {
                 frequentSpansEnabled = frequentSpansEnabled,
                 pluginSpanFilterEnabled = pluginSpanFilterEnabled,
                 metricsExportEnabled = metricsExportEnabled,
+                cpuWindowMetricsReportingEnabled = cpuWindowMetricsReportingEnabled,
             )
         }
     }
@@ -193,6 +215,7 @@ class OtpDiagnosticConfigurable : Configurable {
         frequentSpansCheckBox?.isSelected = settings.isFrequentSpansEnabled()
         pluginSpanFilterCheckBox?.isSelected = settings.pluginFilterEnabledEffective()
         metricsExportEnabledCheckBox?.isSelected = settings.metricsExportEnabledEffective()
+        cpuWindowMetricsReportingCheckBox?.isSelected = settings.cpuWindowMetricsReportingEnabledEffective()
         categoryCheckboxes.forEach { (categoryId, checkbox) ->
             checkbox.isSelected = settings.isCategoryEnabled(categoryId)
         }

@@ -3,6 +3,8 @@ package com.jetbrains.otp.freeze
 import com.intellij.diagnostic.FreezeNotifier
 import com.intellij.diagnostic.LogMessage
 import com.intellij.diagnostic.ThreadDump
+import com.intellij.openapi.diagnostic.Logger
+import com.jetbrains.otp.exporter.CpuUsageWindowMetricsReporter
 import com.jetbrains.otp.span.DefaultRootSpanService
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
@@ -20,6 +22,7 @@ class OtpFreezeNotifier : FreezeNotifier {
 
     companion object {
         private const val MAX_THREAD_DUMP_SIZE_BYTES = 64 * 1024
+        private val LOG = Logger.getInstance(OtpFreezeNotifier::class.java)
     }
 
     override fun notifyFreeze(
@@ -28,6 +31,12 @@ class OtpFreezeNotifier : FreezeNotifier {
         reportDir: Path,
         durationMs: Long
     ) {
+        runCatching {
+            CpuUsageWindowMetricsReporter.getInstance().reportMetricsPrecisely()
+        }.onFailure { error ->
+            LOG.warn("Failed to report CPU window metrics after freeze", error)
+        }
+
         val endTime = Instant.now()
         val startTime = endTime.minusMillis(durationMs)
         val span = tracer.spanBuilder("ui-thread-freeze")

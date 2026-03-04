@@ -8,12 +8,14 @@ internal class BackendOtpDiagnosticSettingsApiImpl : OtpDiagnosticSettingsApi {
         frequentSpansEnabled: Boolean,
         pluginSpanFilterEnabled: Boolean,
         metricsExportEnabled: Boolean,
+        cpuWindowMetricsReportingEnabled: Boolean,
     ) {
         OtpDiagnosticSettings.getInstance().syncFilteringSettings(
             disabledCategories = disabledCategories,
             frequentSpansEnabled = frequentSpansEnabled,
             pluginSpanFilterEnabled = pluginSpanFilterEnabled,
             metricsExportEnabled = metricsExportEnabled,
+            cpuWindowMetricsReportingEnabled = cpuWindowMetricsReportingEnabled,
         )
     }
 }

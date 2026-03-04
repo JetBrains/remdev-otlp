@@ -38,6 +38,7 @@ class FromBackendOtlpConfigFactory(
         val settings = OtpDiagnosticSettings.getInstance()
         settings.updateBackendPluginFilterOverride(remoteConfig.pluginFilterOverride)
         settings.updateBackendMetricsExportOverride(remoteConfig.metricsExportOverride)
+        settings.updateBackendCpuWindowMetricsReportingOverride(remoteConfig.cpuWindowMetricsReportingOverride)
         return settings
     }
 

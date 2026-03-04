@@ -5,8 +5,10 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
+import com.jetbrains.otp.exporter.hasCpuWindowMetricsReportingOverride
 import com.jetbrains.otp.exporter.hasMetricsExportOverride
 import com.jetbrains.otp.exporter.hasPluginFilterOverride
+import com.jetbrains.otp.exporter.readCpuWindowMetricsReportingEnabled
 import com.jetbrains.otp.exporter.readMetricsExportEnabled
 import com.jetbrains.otp.exporter.readPluginFilterEnabled
 
@@ -22,12 +24,15 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
     private var backendPluginFilterOverride: Boolean? = null
     @Volatile
     private var backendMetricsExportOverride: Boolean? = null
+    @Volatile
+    private var backendCpuWindowMetricsReportingOverride: Boolean? = null
 
     data class State(
         var disabledCategories: MutableSet<String> = mutableSetOf(),
         var frequentSpansEnabled: Boolean = false,
         var pluginSpanFilterEnabled: Boolean = true,
         var metricsExportEnabled: Boolean = true,
+        var cpuWindowMetricsReportingEnabled: Boolean = false,
     )
 
     override fun getState(): State = state
@@ -41,12 +46,14 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
         frequentSpansEnabled: Boolean,
         pluginSpanFilterEnabled: Boolean,
         metricsExportEnabled: Boolean,
+        cpuWindowMetricsReportingEnabled: Boolean,
     ) {
         state.disabledCategories.clear()
         state.disabledCategories.addAll(disabledCategories)
         state.frequentSpansEnabled = frequentSpansEnabled
         state.pluginSpanFilterEnabled = pluginSpanFilterEnabled
         state.metricsExportEnabled = metricsExportEnabled
+        state.cpuWindowMetricsReportingEnabled = cpuWindowMetricsReportingEnabled
     }
 
     fun updateBackendPluginFilterOverride(pluginFilterOverride: Boolean?) {
@@ -55,6 +62,10 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
 
     fun updateBackendMetricsExportOverride(metricsExportOverride: Boolean?) {
         backendMetricsExportOverride = metricsExportOverride
+    }
+
+    fun updateBackendCpuWindowMetricsReportingOverride(cpuWindowMetricsReportingOverride: Boolean?) {
+        backendCpuWindowMetricsReportingOverride = cpuWindowMetricsReportingOverride
     }
 
     fun isCategoryEnabled(categoryId: String): Boolean {
@@ -97,6 +108,19 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
 
     fun isMetricsExportOverridden(): Boolean {
         return backendMetricsExportOverride != null || hasMetricsExportOverride()
+    }
+
+    fun isCpuWindowMetricsReportingEnabled(): Boolean {
+        return state.cpuWindowMetricsReportingEnabled
+    }
+
+    fun cpuWindowMetricsReportingEnabledEffective(): Boolean {
+        backendCpuWindowMetricsReportingOverride?.let { return it }
+        return readCpuWindowMetricsReportingEnabled(state.cpuWindowMetricsReportingEnabled)
+    }
+
+    fun isCpuWindowMetricsReportingOverridden(): Boolean {
+        return backendCpuWindowMetricsReportingOverride != null || hasCpuWindowMetricsReportingOverride()
     }
 
     companion object {

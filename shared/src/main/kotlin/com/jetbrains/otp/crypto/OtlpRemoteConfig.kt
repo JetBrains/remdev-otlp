@@ -7,5 +7,6 @@ data class OtlpRemoteConfig(
     val endpoint: String,
     val encryptedHeaders: EncryptedData,
     val pluginFilterOverride: Boolean?,
-    val metricsExportOverride: Boolean?
+    val metricsExportOverride: Boolean?,
+    val cpuWindowMetricsReportingOverride: Boolean? = null,
 )
