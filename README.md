@@ -97,7 +97,7 @@ A short-lived metadata span created at session initialization to store session i
 **Attributes:**
 - `session.trace_id` (string): The trace ID of the session
 - `session.span_id` (string): The span ID of the session
-- `host-name` (string): Name of the backend host
+- `host.name` (string): Name of the backend host
 - `session.id` (string): Unique identifier for the session
 
 **Parent:** Root span
