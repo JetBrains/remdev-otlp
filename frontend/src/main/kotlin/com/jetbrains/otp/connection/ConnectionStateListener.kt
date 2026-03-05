@@ -10,8 +10,15 @@ import com.jetbrains.thinclient.diagnostics.ThinClientConnectionState
 import com.jetbrains.thinclient.diagnostics.ThinClientDiagnosticsService
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import com.jetbrains.otp.freeze.StackTraceAbbreviator
+import java.io.PrintWriter
+import java.io.StringWriter
 
 class ConnectionStateListener : ProjectActivity {
+    private val stackTraceAbbreviator = StackTraceAbbreviator()
+
     override suspend fun execute(project: Project) {
         var connected: Boolean? = null
         var reconnectionSpan: Span? = null
@@ -29,8 +36,20 @@ class ConnectionStateListener : ProjectActivity {
                         LOG.warn("Failed to report frequent performance metrics after connection drop", error)
                     }
 
+                    // Capture current stacktrace for debugging
+                    val stackTrace = Exception("Connection dropped - capturing stack for diagnostics").let { ex ->
+                        val sw = StringWriter()
+                        ex.printStackTrace(PrintWriter(sw))
+                        stackTraceAbbreviator.abbreviateStackTraces(sw.toString())
+                    }
+
                     reconnectionSpan?.end()
                     reconnectionSpan = tracer.spanBuilder("connection-dropped-reconnecting")
+                        .setAllAttributes(
+                            Attributes.of(
+                                AttributeKey.stringKey("stackTrace"), stackTrace
+                            )
+                        )
                         .startSpan()
                     reconnectionSpan?.setStatus(StatusCode.ERROR)
                 }
