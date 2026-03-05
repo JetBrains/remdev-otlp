@@ -60,14 +60,24 @@ Default: `http://localhost`
 2. Saved plugin setting (`OpenTelemetry Diagnostic` settings UI)
 3. Default: `true`
 
-Accepted values for both boolean overrides (`plugin span filter` and `metrics export`) are only:
-- `true` enable metrics export
-- `false` disable metrics export
+### Frequent Performance Metrics Reporting Source
+
+The feature is intended for diagnostic analysis of transient performance incidents (for example, UI thread freezes or remote connection drops).  
+When triggered, it emits high-frequency CPU and memory metrics for the preceding 5-minute window and continues emitting for the subsequent 5 minutes to capture post-incident recovery behavior.
+
+`frequentPerformanceMetricsReportingEnabled` is resolved in this order:
+1. System property/env override (authoritative):
+   - `rdct.diagnostic.otlp.frequent.performance.metrics.reporting.enabled`
+   - `RDCT_DIAGNOSTIC_OTLP_FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED`
+2. Saved plugin setting (`OpenTelemetry Diagnostic` settings UI)
+3. Default: `false`
+
 
 ### Filtering Settings UI
 
 In `Settings | Tools | OpenTelemetry Diagnostic`, you can configure:
 - `Show only a short list of diagnostic spans` (plugin span filter)
+- `Enable on-demand performance report (last 5 minutes)` (frequent performance metrics reporting)
 - `Enable frequent spans`
 - hierarchical span categories (parent/child checkboxes)
 
