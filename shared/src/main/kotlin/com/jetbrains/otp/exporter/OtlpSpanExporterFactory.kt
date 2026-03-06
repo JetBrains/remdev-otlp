@@ -65,6 +65,12 @@ const val FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_PROPERTY =
 const val FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_ENV =
     "RDCT_DIAGNOSTIC_OTLP_FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED"
 
+const val METRICS_DENYLIST_ENABLED_PROPERTY = "rdct.diagnostic.otlp.metrics.denylist.enabled"
+const val METRICS_DENYLIST_ENABLED_ENV = "RDCT_DIAGNOSTIC_OTLP_METRICS_DENYLIST_ENABLED"
+
+const val METRICS_EXPORT_INTERVAL_MINUTES_PROPERTY = "rdct.diagnostic.otlp.metrics.export.interval.minutes"
+const val METRICS_EXPORT_INTERVAL_MINUTES_ENV = "RDCT_DIAGNOSTIC_OTLP_METRICS_EXPORT_INTERVAL_MINUTES"
+
 fun readPluginFilterEnabled(defaultValue: Boolean = true): Boolean {
     return readBooleanFromPropertyOrEnv(
         propertyName = PLUGIN_SPAN_FILTER_ENABLED_PROPERTY,
@@ -101,6 +107,31 @@ fun readFrequentPerformanceMetricsReportingEnabled(defaultValue: Boolean = false
 fun hasFrequentPerformanceMetricsReportingOverride(): Boolean {
     return System.getProperty(FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_PROPERTY) != null
         || System.getenv(FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_ENV) != null
+}
+
+fun readMetricsDenylistEnabled(defaultValue: Boolean = true): Boolean {
+    return readBooleanFromPropertyOrEnv(
+        propertyName = METRICS_DENYLIST_ENABLED_PROPERTY,
+        envName = METRICS_DENYLIST_ENABLED_ENV,
+        defaultValue = defaultValue
+    )
+}
+
+fun hasMetricsDenylistOverride(): Boolean {
+    return System.getProperty(METRICS_DENYLIST_ENABLED_PROPERTY) != null
+        || System.getenv(METRICS_DENYLIST_ENABLED_ENV) != null
+}
+
+fun readMetricsExportIntervalMinutes(defaultValue: Int = 5): Int {
+    val rawValue = System.getProperty(METRICS_EXPORT_INTERVAL_MINUTES_PROPERTY)
+        ?: System.getenv(METRICS_EXPORT_INTERVAL_MINUTES_ENV)
+        ?: return defaultValue
+    return rawValue.toIntOrNull()?.coerceIn(1, 60) ?: defaultValue
+}
+
+fun hasMetricsExportIntervalOverride(): Boolean {
+    return System.getProperty(METRICS_EXPORT_INTERVAL_MINUTES_PROPERTY) != null
+        || System.getenv(METRICS_EXPORT_INTERVAL_MINUTES_ENV) != null
 }
 
 private fun readBooleanFromPropertyOrEnv(propertyName: String, envName: String, defaultValue: Boolean): Boolean {
