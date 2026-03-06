@@ -11,8 +11,8 @@ import com.jetbrains.otp.settings.OtpDiagnosticSettings
 internal class CryptoRpcImpl : CryptoRpc {
     private val cryptoService = BackendCryptoService.getInstance()
 
-    override suspend fun requestKeyExchange(clientPublicKey: String): EncryptedAesKey {
-        return cryptoService.encryptAesKeyForClient(clientPublicKey)
+    override suspend fun requestKeyExchange(clientPublicKey: String): EncryptedKey {
+        return cryptoService.encryptKeyForClient(clientPublicKey)
     }
 
     override suspend fun sendEncryptedData(data: EncryptedData): String {

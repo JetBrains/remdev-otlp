@@ -4,42 +4,38 @@ import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
-import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-class AesEncryption {
+class ChaCha20Poly1305Encryption {
     companion object {
-        private const val AES_KEY_SIZE = 256
-        private const val GCM_TAG_LENGTH = 128
-        private const val GCM_IV_LENGTH = 12
-        private const val ALGORITHM = "AES"
-        private const val TRANSFORMATION = "AES/GCM/NoPadding"
+        private const val KEY_ALGORITHM = "ChaCha20"
+        private const val TRANSFORMATION = "ChaCha20-Poly1305"
+        private const val NONCE_LENGTH = 12
 
         fun generateKey(): SecretKey {
-            val keyGenerator = KeyGenerator.getInstance(ALGORITHM)
-            keyGenerator.init(AES_KEY_SIZE, SecureRandom())
+            val keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM)
+            keyGenerator.init(256, SecureRandom())
             return keyGenerator.generateKey()
         }
 
         fun keyToBytes(key: SecretKey): ByteArray = key.encoded
 
         fun bytesToKey(keyBytes: ByteArray): SecretKey {
-            return SecretKeySpec(keyBytes, ALGORITHM)
+            return SecretKeySpec(keyBytes, KEY_ALGORITHM)
         }
     }
 
     private val secureRandom = SecureRandom()
 
     fun encrypt(data: ByteArray, key: SecretKey): EncryptedData {
-        val iv = ByteArray(GCM_IV_LENGTH)
-        secureRandom.nextBytes(iv)
+        val nonce = ByteArray(NONCE_LENGTH)
+        secureRandom.nextBytes(nonce)
 
         val cipher = Cipher.getInstance(TRANSFORMATION)
-        val gcmSpec = GCMParameterSpec(GCM_TAG_LENGTH, iv)
-        cipher.init(Cipher.ENCRYPT_MODE, key, gcmSpec)
+        cipher.init(Cipher.ENCRYPT_MODE, key, IvParameterSpec(nonce))
 
-        val encryptedData = cipher.doFinal(data)
-        return EncryptedData.fromBytes(encryptedData, iv)
+        return EncryptedData.fromBytes(cipher.doFinal(data), nonce)
     }
 
     fun encrypt(text: String, key: SecretKey): EncryptedData {
@@ -48,9 +44,7 @@ class AesEncryption {
 
     fun decrypt(encryptedData: EncryptedData, key: SecretKey): ByteArray {
         val cipher = Cipher.getInstance(TRANSFORMATION)
-        val gcmSpec = GCMParameterSpec(GCM_TAG_LENGTH, encryptedData.getIvBytes())
-        cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec)
-
+        cipher.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(encryptedData.getIvBytes()))
         return cipher.doFinal(encryptedData.getDataBytes())
     }
 

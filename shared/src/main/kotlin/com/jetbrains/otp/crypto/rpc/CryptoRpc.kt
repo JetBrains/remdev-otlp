@@ -1,8 +1,8 @@
 package com.jetbrains.otp.crypto.rpc
 
 import com.intellij.platform.rpc.RemoteApiProviderService
-import com.jetbrains.otp.crypto.EncryptedAesKey
 import com.jetbrains.otp.crypto.EncryptedData
+import com.jetbrains.otp.crypto.EncryptedKey
 import com.jetbrains.otp.crypto.OtlpRemoteConfig
 import fleet.rpc.RemoteApi
 import fleet.rpc.Rpc
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.ApiStatus
 @Suppress("UnstableApiUsage")
 @ApiStatus.Internal
 interface CryptoRpc : RemoteApi<Unit> {
-    suspend fun requestKeyExchange(clientPublicKey: String): EncryptedAesKey
+    suspend fun requestKeyExchange(clientPublicKey: String): EncryptedKey
 
     suspend fun sendEncryptedData(data: EncryptedData): String
 

@@ -11,8 +11,8 @@ class FrontendCryptoClient {
     suspend fun initialize() {
         val cryptoRpc = CryptoRpc.getInstance()
         val clientPublicKey = clientCryptoManager.initialize()
-        val encryptedAesKey = cryptoRpc.requestKeyExchange(clientPublicKey)
-        clientCryptoManager.setAesKey(encryptedAesKey)
+        val encryptedKey = cryptoRpc.requestKeyExchange(clientPublicKey)
+        clientCryptoManager.setKey(encryptedKey)
     }
 
     suspend fun sendEncryptedData(data: String): String {

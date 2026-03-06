@@ -7,8 +7,8 @@ import com.intellij.openapi.components.service
 class BackendCryptoService {
     private val serverCryptoManager = ServerCryptoManager()
 
-    fun encryptAesKeyForClient(clientPublicKey: String): EncryptedAesKey {
-        return serverCryptoManager.encryptAesKeyForClient(clientPublicKey)
+    fun encryptKeyForClient(clientPublicKey: String): EncryptedKey {
+        return serverCryptoManager.encryptKeyForClient(clientPublicKey)
     }
 
     fun decryptData(data: EncryptedData): String {

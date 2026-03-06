@@ -22,12 +22,12 @@ data class EncryptedData(
 }
 
 @Serializable
-data class EncryptedAesKey(
+data class EncryptedKey(
     val encryptedKey: String
 ) {
     companion object {
-        fun fromBytes(encryptedKey: ByteArray): EncryptedAesKey {
-            return EncryptedAesKey(
+        fun fromBytes(encryptedKey: ByteArray): EncryptedKey {
+            return EncryptedKey(
                 encryptedKey = Base64.getEncoder().encodeToString(encryptedKey)
             )
         }

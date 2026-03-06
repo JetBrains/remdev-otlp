@@ -29,16 +29,16 @@ class RsaEncryption {
         }
     }
 
-    fun encryptAesKey(aesKey: ByteArray, publicKey: PublicKey): EncryptedAesKey {
+    fun encryptKey(key: ByteArray, publicKey: PublicKey): EncryptedKey {
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, publicKey)
-        val encryptedKey = cipher.doFinal(aesKey)
-        return EncryptedAesKey.fromBytes(encryptedKey)
+        val encryptedKey = cipher.doFinal(key)
+        return EncryptedKey.fromBytes(encryptedKey)
     }
 
-    fun decryptAesKey(encryptedAesKey: EncryptedAesKey, privateKey: PrivateKey): ByteArray {
+    fun decryptKey(encryptedKey: EncryptedKey, privateKey: PrivateKey): ByteArray {
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.DECRYPT_MODE, privateKey)
-        return cipher.doFinal(encryptedAesKey.getKeyBytes())
+        return cipher.doFinal(encryptedKey.getKeyBytes())
     }
 }

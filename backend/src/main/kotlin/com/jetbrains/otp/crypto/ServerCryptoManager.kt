@@ -1,27 +1,25 @@
 package com.jetbrains.otp.crypto
-
-
 import javax.crypto.SecretKey
 
 class ServerCryptoManager {
     private val rsaEncryption = RsaEncryption()
-    private val aesEncryption = AesEncryption()
+    private val encryption = ChaCha20Poly1305Encryption()
 
-    private val aesKey: SecretKey = AesEncryption.generateKey()
+    private val sessionKey: SecretKey = ChaCha20Poly1305Encryption.generateKey()
 
-    fun encryptAesKeyForClient(clientPublicKeyBase64: String): EncryptedAesKey {
+    fun encryptKeyForClient(clientPublicKeyBase64: String): EncryptedKey {
         val clientPublicKey = RsaEncryption.base64ToPublicKey(clientPublicKeyBase64)
-        val aesKeyBytes = AesEncryption.keyToBytes(aesKey)
-        return rsaEncryption.encryptAesKey(aesKeyBytes, clientPublicKey)
+        val keyBytes = ChaCha20Poly1305Encryption.keyToBytes(sessionKey)
+        return rsaEncryption.encryptKey(keyBytes, clientPublicKey)
     }
 
     fun encrypt(data: String): EncryptedData {
-        return aesEncryption.encrypt(data, aesKey)
+        return encryption.encrypt(data, sessionKey)
     }
 
     fun decrypt(encryptedData: EncryptedData): String {
-        return aesEncryption.decryptToString(encryptedData, aesKey)
+        return encryption.decryptToString(encryptedData, sessionKey)
     }
 
-    fun getAesKey(): SecretKey = aesKey
+    fun getSessionKey(): SecretKey = sessionKey
 }
