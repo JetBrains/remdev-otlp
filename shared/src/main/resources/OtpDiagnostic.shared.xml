@@ -1,8 +1,5 @@
 <idea-plugin>
     <extensionPoints>
-        <extensionPoint name="allowedMetricsProvider"
-                        interface="com.jetbrains.otp.exporter.AllowedMetricsProvider"
-                        dynamic="true"/>
         <extensionPoint name="deniedMetricsProvider"
                         interface="com.jetbrains.otp.exporter.DeniedMetricsProvider"
                         dynamic="true"/>
@@ -21,7 +18,6 @@
                             serviceImplementation="com.jetbrains.otp.settings.OtpDiagnosticFrequentSpanFilterService"/>
     </extensions>
     <extensions defaultExtensionNs="com.jetbrains.otp.diagnostic">
-        <allowedMetricsProvider implementation="com.jetbrains.otp.exporter.HardcodedListAllowedMetricsProvider"/>
         <deniedMetricsProvider implementation="com.jetbrains.otp.exporter.HardcodedListDeniedMetricsProvider"/>
     </extensions>
     <applicationListeners>
