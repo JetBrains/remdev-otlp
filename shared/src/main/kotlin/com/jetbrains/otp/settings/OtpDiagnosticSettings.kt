@@ -8,9 +8,13 @@ import com.intellij.openapi.components.service
 import com.jetbrains.otp.exporter.hasFrequentPerformanceMetricsReportingOverride
 import com.jetbrains.otp.exporter.hasMetricsExportOverride
 import com.jetbrains.otp.exporter.hasPluginFilterOverride
+import com.jetbrains.otp.exporter.hasMetricsDenylistOverride
+import com.jetbrains.otp.exporter.hasMetricsExportIntervalOverride
 import com.jetbrains.otp.exporter.readFrequentPerformanceMetricsReportingEnabled
 import com.jetbrains.otp.exporter.readMetricsExportEnabled
 import com.jetbrains.otp.exporter.readPluginFilterEnabled
+import com.jetbrains.otp.exporter.readMetricsDenylistEnabled
+import com.jetbrains.otp.exporter.readMetricsExportIntervalMinutes
 
 @Service(Service.Level.APP)
 @State(
@@ -33,6 +37,8 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
         var pluginSpanFilterEnabled: Boolean = true,
         var metricsExportEnabled: Boolean = true,
         var frequentPerformanceMetricsReportingEnabled: Boolean = false,
+        var metricsDenylistEnabled: Boolean = true,
+        var metricsExportIntervalMinutes: Int = 5,
     )
 
     override fun getState(): State = state
@@ -121,6 +127,30 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
 
     fun isFrequentPerformanceMetricsReportingOverridden(): Boolean {
         return backendFrequentPerformanceMetricsReportingOverride != null || hasFrequentPerformanceMetricsReportingOverride()
+    }
+
+    fun isMetricsDenylistEnabled(): Boolean {
+        return state.metricsDenylistEnabled
+    }
+
+    fun metricsDenylistEnabledEffective(): Boolean {
+        return readMetricsDenylistEnabled(state.metricsDenylistEnabled)
+    }
+
+    fun isMetricsDenylistOverridden(): Boolean {
+        return hasMetricsDenylistOverride()
+    }
+
+    fun getMetricsExportIntervalMinutes(): Int {
+        return state.metricsExportIntervalMinutes
+    }
+
+    fun metricsExportIntervalMinutesEffective(): Int {
+        return readMetricsExportIntervalMinutes(state.metricsExportIntervalMinutes)
+    }
+
+    fun isMetricsExportIntervalOverridden(): Boolean {
+        return hasMetricsExportIntervalOverride()
     }
 
     companion object {

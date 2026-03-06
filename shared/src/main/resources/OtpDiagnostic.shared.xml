@@ -3,6 +3,9 @@
         <extensionPoint name="allowedMetricsProvider"
                         interface="com.jetbrains.otp.exporter.AllowedMetricsProvider"
                         dynamic="true"/>
+        <extensionPoint name="deniedMetricsProvider"
+                        interface="com.jetbrains.otp.exporter.DeniedMetricsProvider"
+                        dynamic="true"/>
         <extensionPoint name="spanProcessorProvider"
                         interface="com.jetbrains.otp.exporter.processor.SpanProcessorProvider"
                         dynamic="true"/>
@@ -19,6 +22,7 @@
     </extensions>
     <extensions defaultExtensionNs="com.jetbrains.otp.diagnostic">
         <allowedMetricsProvider implementation="com.jetbrains.otp.exporter.HardcodedListAllowedMetricsProvider"/>
+        <deniedMetricsProvider implementation="com.jetbrains.otp.exporter.HardcodedListDeniedMetricsProvider"/>
     </extensions>
     <applicationListeners>
         <listener class="com.jetbrains.otp.exporter.SpansReceivedListener"
