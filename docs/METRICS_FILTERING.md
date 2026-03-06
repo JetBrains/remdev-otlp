@@ -34,6 +34,22 @@ Prevents rate limiting at scale by implementing two-layer filtering:
 -Drdct.diagnostic.otlp.metrics.export.interval.minutes=10
 ```
 
+## Example VM Options
+
+Add to IDE VM options (Help → Edit Custom VM Options):
+
+```properties
+# OTLP endpoint configuration
+-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io
+-Dotel.exporter.otlp.headers=x-honeycomb-team=YOUR_API_KEY
+
+# Optional: Adjust throttling interval
+-Drdct.diagnostic.otlp.metrics.export.interval.minutes=10
+
+# Optional: Disable denylist for debugging
+-Drdct.diagnostic.otlp.metrics.denylist.enabled=false
+```
+
 ## Customizing
 
 Edit patterns in:
