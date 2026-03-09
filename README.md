@@ -39,6 +39,24 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost
 ```
 Default: `http://localhost`
 
+### Backend OTLP Protocol (optional)
+
+**Environment Variable:**
+```bash
+export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+```
+**OR System Property:**
+```bash
+-Dotel.exporter.otlp.protocol=grpc
+```
+
+Supported values:
+- `http/protobuf` (default)
+- `grpc`
+
+When `http/protobuf` is used, the plugin appends `/v1/traces` and `/v1/metrics` to the configured endpoint.
+When `grpc` is used, the plugin uses the configured endpoint as-is for both traces and metrics.
+
 ### Plugin Span Filter Source
 
 `isPluginSpanFilterEnabled` is resolved in this order:

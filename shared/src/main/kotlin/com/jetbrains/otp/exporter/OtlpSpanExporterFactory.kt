@@ -2,12 +2,28 @@ package com.jetbrains.otp.exporter
 
 import com.intellij.openapi.diagnostic.Logger
 import com.jetbrains.otp.settings.OtpDiagnosticSettings
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 import io.opentelemetry.sdk.trace.export.SpanExporter
+import kotlinx.serialization.Serializable
 import java.util.concurrent.TimeUnit
+
+@Serializable
+enum class OtlpProtocol(val wireValue: String) {
+    HTTP_PROTOBUF("http/protobuf"),
+    GRPC("grpc");
+
+    companion object {
+        fun parse(value: String?): OtlpProtocol? {
+            val normalizedValue = value?.trim()?.lowercase() ?: return null
+            return entries.firstOrNull { it.wireValue == normalizedValue }
+        }
+    }
+}
 
 data class OtlpConfig(
     val endpoint: String,
+    val protocol: OtlpProtocol,
     val headers: Map<String, String>,
     val timeoutSeconds: Long,
     val isPluginSpanFilterEnabled: Boolean,
@@ -18,6 +34,7 @@ object OtlpConfigFactory {
     fun fromEnv(timeoutSeconds: Long = 10): OtlpConfig {
         return OtlpConfig(
             endpoint = readOtlpEndpointFromPropertyOrEnv(),
+            protocol = readOtlpProtocolFromPropertyOrEnv(),
             headers = readOtlpHeadersFromPropertyOrEnv(),
             timeoutSeconds = timeoutSeconds,
             isPluginSpanFilterEnabled = OtpDiagnosticSettings.getInstance().pluginFilterEnabledEffective(),
@@ -28,14 +45,24 @@ object OtlpConfigFactory {
 
 const val OTLP_ENDPOINT_PROPERTY = "otel.exporter.otlp.endpoint"
 const val OTLP_ENDPOINT_ENV = "OTEL_EXPORTER_OTLP_ENDPOINT"
+const val OTLP_PROTOCOL_PROPERTY = "otel.exporter.otlp.protocol"
+const val OTLP_PROTOCOL_ENV = "OTEL_EXPORTER_OTLP_PROTOCOL"
 const val OTLP_HEADERS_PROPERTY = "otel.exporter.otlp.headers"
 const val OTLP_HEADERS_ENV = "OTEL_EXPORTER_OTLP_HEADERS"
 const val DEFAULT_OTLP_ENDPOINT = "http://localhost"
+val DEFAULT_OTLP_PROTOCOL = OtlpProtocol.HTTP_PROTOBUF
 
 fun readOtlpEndpointFromPropertyOrEnv(defaultValue: String = DEFAULT_OTLP_ENDPOINT): String {
     return System.getProperty(OTLP_ENDPOINT_PROPERTY)
         ?: System.getenv(OTLP_ENDPOINT_ENV)
         ?: defaultValue
+}
+
+fun readOtlpProtocolFromPropertyOrEnv(defaultValue: OtlpProtocol = DEFAULT_OTLP_PROTOCOL): OtlpProtocol {
+    val rawValue = System.getProperty(OTLP_PROTOCOL_PROPERTY)
+        ?: System.getenv(OTLP_PROTOCOL_ENV)
+        ?: return defaultValue
+    return OtlpProtocol.parse(rawValue) ?: defaultValue
 }
 
 fun readRawOtlpHeadersFromPropertyOrEnv(defaultValue: String = ""): String {
@@ -119,14 +146,40 @@ object OtlpSpanExporterFactory {
 
     fun create(config: OtlpConfig): SpanExporter? {
         return try {
-            val builder = OtlpHttpSpanExporter.builder()
-                .setEndpoint("${config.endpoint}/v1/traces")
-                .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
-            config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
-            builder.build()
+            when (config.protocol) {
+                OtlpProtocol.HTTP_PROTOBUF -> {
+                    val builder = OtlpHttpSpanExporter.builder()
+                        .setEndpoint(resolveTraceExporterEndpoint(config))
+                        .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
+                    config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
+                    builder.build()
+                }
+
+                OtlpProtocol.GRPC -> {
+                    val builder = OtlpGrpcSpanExporter.builder()
+                        .setEndpoint(resolveTraceExporterEndpoint(config))
+                        .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
+                    config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
+                    builder.build()
+                }
+            }
         } catch (e: Exception) {
             LOG.error("Failed to initialize OTLP span exporter", e)
             null
         }
+    }
+}
+
+fun resolveTraceExporterEndpoint(config: OtlpConfig): String {
+    return when (config.protocol) {
+        OtlpProtocol.HTTP_PROTOBUF -> "${config.endpoint}/v1/traces"
+        OtlpProtocol.GRPC -> config.endpoint
+    }
+}
+
+fun resolveMetricExporterEndpoint(config: OtlpConfig): String {
+    return when (config.protocol) {
+        OtlpProtocol.HTTP_PROTOBUF -> "${config.endpoint}/v1/metrics"
+        OtlpProtocol.GRPC -> config.endpoint
     }
 }

@@ -23,6 +23,7 @@ class FromBackendOtlpConfigFactory(
             val metricsExportEnabled = remoteConfig.metricsExportOverride ?: settings.isMetricsExportEnabled()
             return OtlpConfig(
                 endpoint = remoteConfig.endpoint,
+                protocol = remoteConfig.protocol,
                 headers = parseOtlpHeaders(headersStr),
                 timeoutSeconds = timeoutSeconds,
                 isPluginSpanFilterEnabled = pluginSpanFilterEnabled,

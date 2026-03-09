@@ -19,6 +19,7 @@
         <ul>
             <li>Set OTEL_EXPORTER_OTLP_HEADERS environment variable or otel.exporter.otlp.headers system property</li>
             <li>Optional: Set OTEL_EXPORTER_OTLP_ENDPOINT environment variable (default: http://localhost)</li>
+            <li>Optional: Set OTEL_EXPORTER_OTLP_PROTOCOL environment variable or otel.exporter.otlp.protocol system property (`http/protobuf` by default, `grpc` supported)</li>
         </ul>
     ]]></description>
 

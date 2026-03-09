@@ -37,5 +37,6 @@ tasks {
          systemProperty("rdct.diagnostic.otlp", "true")
          systemProperty("idea.diagnostic.opentelemetry.otlp", "true")
          systemProperty("otel.exporter.otlp.endpoint", System.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") ?: "http://localhost")
+         systemProperty("otel.exporter.otlp.protocol", System.getenv("OTEL_EXPORTER_OTLP_PROTOCOL") ?: "http/protobuf")
     }
 }

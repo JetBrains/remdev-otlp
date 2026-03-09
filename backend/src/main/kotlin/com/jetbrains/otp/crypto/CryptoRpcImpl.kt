@@ -5,6 +5,7 @@ import com.jetbrains.otp.exporter.hasFrequentPerformanceMetricsReportingOverride
 import com.jetbrains.otp.exporter.hasMetricsExportOverride
 import com.jetbrains.otp.exporter.hasPluginFilterOverride
 import com.jetbrains.otp.exporter.readOtlpEndpointFromPropertyOrEnv
+import com.jetbrains.otp.exporter.readOtlpProtocolFromPropertyOrEnv
 import com.jetbrains.otp.exporter.readRawOtlpHeadersFromPropertyOrEnv
 import com.jetbrains.otp.settings.OtpDiagnosticSettings
 
@@ -31,6 +32,7 @@ internal class CryptoRpcImpl : CryptoRpc {
         }
         return OtlpRemoteConfig(
             endpoint = readOtlpEndpointFromPropertyOrEnv(),
+            protocol = readOtlpProtocolFromPropertyOrEnv(),
             encryptedHeaders = cryptoService.encryptData(headersStr),
             pluginFilterOverride = pluginFilterOverride,
             metricsExportOverride = metricsExportOverride,
