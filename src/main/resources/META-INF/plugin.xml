@@ -2,7 +2,7 @@
     <id>com.jetbrains.otp.diagnostic</id>
     <name>OpenTelemetry Diagnostic (Remote Development)</name>
     <vendor>JetBrains</vendor>
-    <version>1.0.8</version>
+    <version>1.0.9.2</version>
 
     <description><![CDATA[
         Advanced diagnostic plugin for IntelliJ Platform with OpenTelemetry integration.
