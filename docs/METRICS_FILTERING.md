@@ -1,58 +1,44 @@
-# Metrics Filtering Configuration
+# Metrics Filtering
 
 ## Overview
 
-Prevents rate limiting at scale by implementing two-layer filtering:
+Exports only allowlisted metrics to reduce OTLP backend load while preserving valuable performance data.
 
-1. **Denylist** - Blocks 10 noisy metric patterns
-2. **Throttling** - Exports every 5 minutes (default) instead of every minute
+**Approach:** Allowlist filtering exports ~40-50 high-value metrics every minute:
+- JVM metrics (heap, GC, threads, CPU)
+- Performance metrics (AWTEventQueue, Indexes, VFS, workspaceModel)
+- Plugin's own metrics (rdct.*)
 
-**Impact:** ~96% reduction in metric traffic (1M+ → 24K events/min at 5000 developers)
+**Impact:** ~75-80% reduction in metrics (200+ → 40-50 per export)
 
 ## Configuration
 
-### Denylist (Default: Enabled)
+### Allowlist (Default: Enabled)
 
 ```bash
-# Disable denylist
--Drdct.diagnostic.otlp.metrics.denylist.enabled=false
+# Disable allowlist (export all metrics)
+-Drdct.diagnostic.otlp.metrics.allowlist.enabled=false
+
+# Or via environment variable
+export RDCT_DIAGNOSTIC_OTLP_METRICS_ALLOWLIST_ENABLED=false
 ```
 
-**Blocked patterns:**
-- `StreamlinedBlobStorage.*`, `FileNameCache.*`, `FilePageCache.*`
-- `DiskQueryRelay.*`, `FileChannelInterruptsRetryer.*`
-- `VFS.contentStorage.recordsDeduplicated`, `VFS.contentStorage.recordsDecompressionTimeUs`
-- `cacheStateStorage.*`
-- `DirectByteBufferAllocator.disposed`, `DirectByteBufferAllocator.reclaimed`
+## Allowed Metrics
 
-**Preserved metrics:** `JVM.*`, `AWTEventQueue.*`, `VFS.*` (most), `workspaceModel.*`, `Indexes.*`, `rdct.*`
-
-### Throttling (Default: 5 minutes)
-
-```bash
-# Change export interval (valid: 1-60 minutes)
--Drdct.diagnostic.otlp.metrics.export.interval.minutes=10
-```
-
-## Example VM Options
-
-Add to IDE VM options (Help → Edit Custom VM Options):
-
-```properties
-# OTLP endpoint configuration
--Dotel.exporter.otlp.endpoint=https://api.honeycomb.io
--Dotel.exporter.otlp.headers=x-honeycomb-team=YOUR_API_KEY
-
-# Optional: Adjust throttling interval
--Drdct.diagnostic.otlp.metrics.export.interval.minutes=10
-
-# Optional: Disable denylist for debugging
--Drdct.diagnostic.otlp.metrics.denylist.enabled=false
-```
+- `rdct.*` - Plugin's own metrics
+- `JVM.*` - Heap, GC, threads, CPU
+- `AWTEventQueue.*` - UI responsiveness
+- `Indexes.*`, `Indexing.*` - Indexing performance
+- `workspaceModel.*` - Workspace state
+- `VFS.cache.*`, `VFS.fileByIdCache.*` - File system operations
+- `ReadAction.*`, `WriteAction.*` - IDE actions
+- `FlushQueue.*`, `LowMemory.*`, `MEM.*`, `OS.loadAverage`
 
 ## Customizing
 
-Edit patterns in:
+To modify the allowlist patterns, edit:
 ```
-shared/src/main/kotlin/com/jetbrains/otp/exporter/HardcodedListDeniedMetricsProvider.kt
+shared/src/main/kotlin/com/jetbrains/otp/exporter/HardcodedListAllowedMetricsProvider.kt
 ```
+
+Supports wildcards: `JVM.*` matches all JVM metrics.

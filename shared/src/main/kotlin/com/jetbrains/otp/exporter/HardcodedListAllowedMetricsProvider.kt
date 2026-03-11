@@ -7,30 +7,32 @@ class HardcodedListAllowedMetricsProvider : AllowedMetricsProvider {
 }
 
 /**
- * Allowlist of metrics that should be exported by this plugin.
- * Currently lists all metrics created by this plugin (rdct.* namespace).
- *
- * Note: This allowlist is not currently enforced in the export pipeline.
- * Metric filtering is primarily done via DeniedMetricsProvider (denylist).
+ * Allowlist of metrics that should be exported.
+ * Focuses on JVM, CPU, and performance-critical metrics.
+ * Supports wildcard (*) matching.
  */
 private val METRICS = listOf(
-    // Real-time CPU utilization metrics
-    "rdct.process.cpu.utilization",
-    "rdct.system.cpu.utilization",
+    // Plugin's own metrics
+    "rdct.*",
 
-    // 5-minute window CPU metrics (on-demand during incidents)
-    "rdct.process.cpu.utilization.window.samples",
-    "rdct.process.cpu.utilization.window.avg",
-    "rdct.process.cpu.utilization.window.max",
-    "rdct.system.cpu.utilization.window.samples",
-    "rdct.system.cpu.utilization.window.avg",
-    "rdct.system.cpu.utilization.window.max",
+    // JVM metrics (heap, GC, threads, CPU, memory)
+    "JVM.*",
 
-    // 5-minute window memory metrics (on-demand during incidents)
-    "rdct.process.memory.used.window.samples",
-    "rdct.process.memory.used.window.avg",
-    "rdct.process.memory.used.window.max",
-    "rdct.system.memory.used.window.samples",
-    "rdct.system.memory.used.window.avg",
-    "rdct.system.memory.used.window.max",
+    // UI responsiveness
+    "AWTEventQueue.*",
+
+    // Performance-critical platform metrics
+    "Indexes.*",
+    "Indexing.*",
+    "workspaceModel.*",
+    "VFS.cache.*",
+    "VFS.fileByIdCache.*",
+    "VFS.rootsCount",
+    "ReadAction.*",
+    "WriteAction.*",
+    "writeAction.*",
+    "FlushQueue.*",
+    "LowMemory.*",
+    "MEM.*",
+    "OS.loadAverage",
 )

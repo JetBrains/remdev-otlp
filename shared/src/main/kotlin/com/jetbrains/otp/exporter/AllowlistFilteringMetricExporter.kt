@@ -8,9 +8,9 @@ import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricExporter
 
 /**
- * Wraps another MetricExporter and filters out denied metrics based on denylist patterns.
+ * Wraps another MetricExporter and filters metrics based on allowlist patterns.
  */
-class DenylistFilteringMetricExporter(
+class AllowlistFilteringMetricExporter(
     private val delegate: MetricExporter
 ) : MetricExporter {
 
@@ -19,13 +19,13 @@ class DenylistFilteringMetricExporter(
             MetricNameFilter.shouldExport(metric.name)
         }
 
-        val deniedCount = metrics.size - filteredMetrics.size
-        if (deniedCount > 0) {
-            LOG.debug("Filtered out $deniedCount denied metrics, exporting ${filteredMetrics.size} metrics")
+        val filteredCount = metrics.size - filteredMetrics.size
+        if (filteredCount > 0) {
+            LOG.debug("Filtered out $filteredCount metrics by allowlist, exporting ${filteredMetrics.size} metrics")
         }
 
         if (filteredMetrics.isEmpty() && metrics.isNotEmpty()) {
-            LOG.debug("All ${metrics.size} metrics were denied, skipping export")
+            LOG.debug("All ${metrics.size} metrics were filtered out by allowlist, skipping export")
             return CompletableResultCode.ofSuccess()
         }
 
@@ -33,7 +33,7 @@ class DenylistFilteringMetricExporter(
     }
 
     companion object {
-        private val LOG = Logger.getInstance(DenylistFilteringMetricExporter::class.java)
+        private val LOG = Logger.getInstance(AllowlistFilteringMetricExporter::class.java)
     }
 
     override fun flush(): CompletableResultCode {

@@ -1,28 +1,27 @@
 package com.jetbrains.otp.exporter
 
 /**
- * Filters metric names based on denylist patterns.
+ * Filters metric names based on allowlist patterns.
  * Supports wildcard (*) matching for pattern-based filtering.
  */
 object MetricNameFilter {
-    private val deniedPatterns: List<Regex> by lazy {
-        val providers = DeniedMetricsProvider.EP_NAME.extensionList
-        providers.flatMap { it.getDeniedMetrics() }
+    private val allowedPatterns: List<Regex> by lazy {
+        val providers = AllowedMetricsProvider.EP_NAME.extensionList
+        providers.flatMap { it.getAllowedMetrics() }
             .map { pattern -> convertPatternToRegex(pattern) }
     }
 
     /**
-     * Returns true if the metric should be exported (not denied).
-     * Note: This method assumes denylist is enabled - caller should check settings first.
+     * Returns true if the metric should be exported (is allowed).
      */
     fun shouldExport(metricName: String): Boolean {
-        if (deniedPatterns.isEmpty()) return true
-        return deniedPatterns.none { it.matches(metricName) }
+        if (allowedPatterns.isEmpty()) return false
+        return allowedPatterns.any { it.matches(metricName) }
     }
 
     /**
      * Converts a simple wildcard pattern to regex.
-     * Example: "StreamlinedBlobStorage.*" -> "^StreamlinedBlobStorage\..*$"
+     * Example: "JVM.*" -> "^JVM\..*$"
      */
     private fun convertPatternToRegex(pattern: String): Regex {
         val regexPattern = pattern
