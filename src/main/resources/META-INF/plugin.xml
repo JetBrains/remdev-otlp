@@ -22,6 +22,8 @@
         </ul>
     ]]></description>
 
+    <depends>com.intellij.modules.platform</depends>
+
     <content>
         <module name="OtpDiagnostic.shared"/>
         <module name="OtpDiagnostic.frontend"/>
