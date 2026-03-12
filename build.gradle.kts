@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.jetbrains.otp"
-version = "1.0.9.2"
+version = "1.0.10"
 
 val moduleDescriptorFiles = mapOf(
     "OtpDiagnostic.shared" to layout.projectDirectory.file("shared/src/main/resources/OtpDiagnostic.shared.xml"),
