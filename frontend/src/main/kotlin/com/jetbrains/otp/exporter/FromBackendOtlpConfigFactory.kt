@@ -24,6 +24,7 @@ class FromBackendOtlpConfigFactory(
             return OtlpConfig(
                 endpoint = remoteConfig.endpoint,
                 headers = parseOtlpHeaders(headersStr),
+                protocol = remoteConfig.protocol ?: readOtlpProtocolFromPropertyOrEnv(),
                 timeoutSeconds = timeoutSeconds,
                 isPluginSpanFilterEnabled = pluginSpanFilterEnabled,
                 isMetricsExportEnabled = metricsExportEnabled

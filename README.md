@@ -39,6 +39,26 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost
 ```
 Default: `http://localhost`
 
+### OTLP Protocol (optional)
+
+Supported values:
+- `http/protobuf` (default)
+- `grpc`
+
+Set using either:
+
+**Environment Variable:**
+```bash
+export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+```
+
+**OR System Property:**
+```bash
+-Dotel.exporter.otlp.protocol=grpc
+```
+
+In Remote Development mode, the backend OTLP protocol is propagated to the frontend together with the rest of the OTLP connection config. Setting it on the frontend is only needed as a fallback when backend config is unavailable.
+
 ### Plugin Span Filter Source
 
 `isPluginSpanFilterEnabled` is resolved in this order:
