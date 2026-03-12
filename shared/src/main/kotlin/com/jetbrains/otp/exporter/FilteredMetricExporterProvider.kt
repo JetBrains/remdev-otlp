@@ -10,8 +10,22 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter
 abstract class FilteredMetricExporterProvider : OpenTelemetryExporterProvider {
     override fun getMetricsExporters(): List<MetricExporter> {
         val diagnosticSettings = OtpDiagnosticSettings.getInstance()
+
+        // Build export pipeline: allowlist → underlying exporter
+        val pipelineExporter = SynchronizedClearableLazy<MetricExporter> {
+            var exporter: MetricExporter = getUnderlyingExporter()
+
+            // Apply allowlist filtering if enabled
+            if (diagnosticSettings.metricsAllowlistEnabledEffective()) {
+                exporter = AllowlistFilteringMetricExporter(exporter)
+            }
+
+            exporter
+        }
+
+        // Wrap with global enable/disable filtering
         val exporter = FilteredMetricsExporter(
-            underlyingExporter = SynchronizedClearableLazy { getUnderlyingExporter() },
+            underlyingExporter = pipelineExporter,
             predicate = { diagnosticSettings.metricsExportEnabledEffective() })
         return listOf(exporter)
     }

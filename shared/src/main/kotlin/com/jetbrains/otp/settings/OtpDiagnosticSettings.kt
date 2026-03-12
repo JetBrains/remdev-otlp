@@ -8,9 +8,11 @@ import com.intellij.openapi.components.service
 import com.jetbrains.otp.exporter.hasFrequentPerformanceMetricsReportingOverride
 import com.jetbrains.otp.exporter.hasMetricsExportOverride
 import com.jetbrains.otp.exporter.hasPluginFilterOverride
+import com.jetbrains.otp.exporter.hasMetricsAllowlistOverride
 import com.jetbrains.otp.exporter.readFrequentPerformanceMetricsReportingEnabled
 import com.jetbrains.otp.exporter.readMetricsExportEnabled
 import com.jetbrains.otp.exporter.readPluginFilterEnabled
+import com.jetbrains.otp.exporter.readMetricsAllowlistEnabled
 
 @Service(Service.Level.APP)
 @State(
@@ -33,6 +35,7 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
         var pluginSpanFilterEnabled: Boolean = true,
         var metricsExportEnabled: Boolean = true,
         var frequentPerformanceMetricsReportingEnabled: Boolean = false,
+        var metricsAllowlistEnabled: Boolean = true,
     )
 
     override fun getState(): State = state
@@ -121,6 +124,18 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
 
     fun isFrequentPerformanceMetricsReportingOverridden(): Boolean {
         return backendFrequentPerformanceMetricsReportingOverride != null || hasFrequentPerformanceMetricsReportingOverride()
+    }
+
+    fun isMetricsAllowlistEnabled(): Boolean {
+        return state.metricsAllowlistEnabled
+    }
+
+    fun metricsAllowlistEnabledEffective(): Boolean {
+        return readMetricsAllowlistEnabled(state.metricsAllowlistEnabled)
+    }
+
+    fun isMetricsAllowlistOverridden(): Boolean {
+        return hasMetricsAllowlistOverride()
     }
 
     companion object {
