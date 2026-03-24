@@ -27,7 +27,8 @@ class FromBackendOtlpConfigFactory(
                 protocol = remoteConfig.protocol ?: readOtlpProtocolFromPropertyOrEnv(),
                 timeoutSeconds = timeoutSeconds,
                 isPluginSpanFilterEnabled = pluginSpanFilterEnabled,
-                isMetricsExportEnabled = metricsExportEnabled
+                isMetricsExportEnabled = metricsExportEnabled,
+                configuredSpanAttributes = remoteConfig.configuredSpanAttributes
             )
         } catch (e: Exception) {
             LOG.error("Failed to initialize OTLP config from backend", e)

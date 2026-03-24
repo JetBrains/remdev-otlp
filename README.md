@@ -59,6 +59,29 @@ export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 
 In Remote Development mode, the backend OTLP protocol is propagated to the frontend together with the rest of the OTLP connection config. Setting it on the frontend is only needed as a fallback when backend config is unavailable.
 
+### Global Span Attributes (optional)
+
+Set this on the backend using either:
+
+Environment variable:
+
+```bash
+export RDCT_COMMON_SPAN_ATTRIBUTES="option1=value1,option2=value2"
+```
+
+Or system property:
+
+```bash
+-Drdct.common.span.attributes=option1=value1,option2=value2
+```
+
+The value uses comma-separated `key=value` pairs, so:
+
+- `-Drdct.common.span.attributes=deployment.environment=staging` adds `deployment.environment=staging`
+- `-Drdct.common.span.attributes=deployment.environment=staging,service.instance.id=rd-backend-1` adds both attributes
+
+In Remote Development mode, these backend-defined attributes are propagated to the frontend together with the rest of the OTLP connection config and are added to every exported span on both sides.
+
 ### Plugin Span Filter Source
 
 `isPluginSpanFilterEnabled` is resolved in this order:

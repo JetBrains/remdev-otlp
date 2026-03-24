@@ -20,7 +20,8 @@ data class OtlpConfig(
     val protocol: OtlpProtocol,
     val timeoutSeconds: Long,
     val isPluginSpanFilterEnabled: Boolean,
-    val isMetricsExportEnabled: Boolean
+    val isMetricsExportEnabled: Boolean,
+    val configuredSpanAttributes: Map<String, String> = emptyMap()
 )
 
 object OtlpConfigFactory {
@@ -31,7 +32,8 @@ object OtlpConfigFactory {
             protocol = readOtlpProtocolFromPropertyOrEnv(),
             timeoutSeconds = timeoutSeconds,
             isPluginSpanFilterEnabled = OtpDiagnosticSettings.getInstance().pluginFilterEnabledEffective(),
-            isMetricsExportEnabled = OtpDiagnosticSettings.getInstance().metricsExportEnabledEffective()
+            isMetricsExportEnabled = OtpDiagnosticSettings.getInstance().metricsExportEnabledEffective(),
+            configuredSpanAttributes = readConfiguredSpanAttributesFromPropertyOrEnv()
         )
     }
 }
@@ -91,6 +93,8 @@ const val FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_PROPERTY =
     "rdct.diagnostic.otlp.frequent.performance.metrics.reporting.enabled"
 const val FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_ENV =
     "RDCT_DIAGNOSTIC_OTLP_FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED"
+const val COMMON_SPAN_ATTRIBUTES_PROPERTY = "rdct.common.span.attributes"
+const val COMMON_SPAN_ATTRIBUTES_ENV = "RDCT_COMMON_SPAN_ATTRIBUTES"
 
 fun readPluginFilterEnabled(defaultValue: Boolean = true): Boolean {
     return readBooleanFromPropertyOrEnv(
@@ -128,6 +132,12 @@ fun readFrequentPerformanceMetricsReportingEnabled(defaultValue: Boolean = false
 fun hasFrequentPerformanceMetricsReportingOverride(): Boolean {
     return System.getProperty(FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_PROPERTY) != null
         || System.getenv(FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_ENV) != null
+}
+
+fun readConfiguredSpanAttributesFromPropertyOrEnv(): Map<String, String> {
+    val rawValue = System.getProperty(COMMON_SPAN_ATTRIBUTES_PROPERTY)
+        ?: System.getenv(COMMON_SPAN_ATTRIBUTES_ENV)
+    return parseOtlpHeaders(rawValue)
 }
 
 private fun readBooleanFromPropertyOrEnv(propertyName: String, envName: String, defaultValue: Boolean): Boolean {
