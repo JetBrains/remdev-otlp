@@ -13,9 +13,11 @@ object OtlpMetricExporterFactory {
         return try {
             when (config.protocol) {
                 OtlpProtocol.HTTP_PROTOBUF -> {
+                    val endpoint = buildHttpSignalEndpoint(config.endpoint, "/v1/metrics")
                     val builder = OtlpHttpMetricExporter.builder()
-                        .setEndpoint(buildHttpSignalEndpoint(config.endpoint, "/v1/metrics"))
+                        .setEndpoint(endpoint)
                         .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
+                    OtlpSslConfigurator.configureIfSecure(endpoint, builder::setSslContext)
                     config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
                     builder.build()
                 }
@@ -24,6 +26,7 @@ object OtlpMetricExporterFactory {
                     val builder = OtlpGrpcMetricExporter.builder()
                         .setEndpoint(config.endpoint)
                         .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
+                    OtlpSslConfigurator.configureIfSecure(config.endpoint, builder::setSslContext)
                     config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
                     builder.build()
                 }
