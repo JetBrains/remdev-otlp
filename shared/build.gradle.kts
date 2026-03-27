@@ -8,7 +8,8 @@ plugins {
 dependencies {
     intellijPlatform {
         create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ij.platform) {
-            useInstaller = false
+            useInstaller = true
+            useCache = false
         }
         testFramework(TestFrameworkType.Platform)
     }

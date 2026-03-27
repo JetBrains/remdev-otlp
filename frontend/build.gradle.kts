@@ -10,6 +10,8 @@ dependencies {
     intellijPlatform {
         create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ij.platform) {
             productMode = ProductMode.FRONTEND
+            useCache = false
+            useInstaller = true
         }
         pluginModule(implementation(project(":shared")))
         bundledModules(

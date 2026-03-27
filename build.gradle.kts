@@ -31,12 +31,15 @@ val inlineModuleDescriptorsIntoPluginXml by tasks.registering(InlineModuleDescri
 tasks.named<PatchPluginXmlTask>("patchPluginXml") {
     dependsOn(inlineModuleDescriptorsIntoPluginXml)
     inputFile.set(generatedRootPluginXml)
+    sinceBuild.set("261")
+    untilBuild.set("261.*")
 }
 
 dependencies {
     intellijPlatform {
         create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ij.platform) {
-            useInstaller = false
+            useInstaller = true
+            useCache = false
         }
         pluginModule(implementation(project(":shared")))
         pluginModule(implementation(project(":frontend")))

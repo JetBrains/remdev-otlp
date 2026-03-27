@@ -11,6 +11,8 @@ dependencies {
     intellijPlatform {
         create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ij.platform) {
             productMode = ProductMode.BACKEND
+            useCache = false
+            useInstaller = true
         }
         pluginModule(implementation(project(":shared")))
         bundledModule("intellij.platform.rpc.backend")

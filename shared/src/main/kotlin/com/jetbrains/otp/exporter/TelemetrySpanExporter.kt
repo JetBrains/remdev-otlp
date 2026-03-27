@@ -23,7 +23,7 @@ class TelemetrySpanExporter {
     @Volatile
     private var spanExporter: SpanExporter? = null
 
-    suspend fun initExporter(config: OtlpConfig) {
+    fun initExporter(config: OtlpConfig) {
         currentConfig = config
         try {
             spanExporter = OtlpSpanExporterFactory.create(config)
