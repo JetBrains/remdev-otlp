@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.Logger
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.sdk.metrics.export.MetricExporter
+import java.util.ServiceConfigurationError
 import java.util.concurrent.TimeUnit
 
 object OtlpMetricExporterFactory {
@@ -31,6 +32,12 @@ object OtlpMetricExporterFactory {
                     builder.build()
                 }
             }
+        } catch (e: ServiceConfigurationError) {
+            LOG.error("Failed to initialize OTLP metric exporter", e)
+            null
+        } catch (e: LinkageError) {
+            LOG.error("Failed to initialize OTLP metric exporter", e)
+            null
         } catch (e: Exception) {
             LOG.error("Failed to initialize OTLP metric exporter", e)
             null

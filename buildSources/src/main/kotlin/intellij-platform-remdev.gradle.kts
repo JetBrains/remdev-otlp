@@ -18,14 +18,7 @@ dependencies {
 
     compileOnly("io.opentelemetry:opentelemetry-sdk:${SharedDependencies.OPEN_TELEMETRY_LIBRARY}")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp:${SharedDependencies.OPEN_TELEMETRY_LIBRARY}") {
-        exclude(group = "io.opentelemetry", module = "opentelemetry-sdk")
-        exclude(group = "io.opentelemetry", module = "opentelemetry-sdk-trace")
-        exclude(group = "io.opentelemetry", module = "opentelemetry-sdk-common")
-        exclude(group = "io.opentelemetry", module = "opentelemetry-sdk-metrics")
-        exclude(group = "io.opentelemetry", module = "opentelemetry-api")
-        exclude(group = "io.opentelemetry", module = "opentelemetry-context")
-        exclude(group = "org.jetbrains.kotlin")
-        exclude(group = "org.jetbrains.kotlinx")
+        isTransitive = false
     }
 }
 

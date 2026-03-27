@@ -5,6 +5,7 @@ import com.jetbrains.otp.settings.OtpDiagnosticSettings
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
 import io.opentelemetry.sdk.trace.export.SpanExporter
+import java.util.ServiceConfigurationError
 import kotlinx.serialization.Serializable
 import java.util.concurrent.TimeUnit
 
@@ -176,6 +177,12 @@ object OtlpSpanExporterFactory {
                     builder.build()
                 }
             }
+        } catch (e: ServiceConfigurationError) {
+            LOG.error("Failed to initialize OTLP span exporter", e)
+            null
+        } catch (e: LinkageError) {
+            LOG.error("Failed to initialize OTLP span exporter", e)
+            null
         } catch (e: Exception) {
             LOG.error("Failed to initialize OTLP span exporter", e)
             null

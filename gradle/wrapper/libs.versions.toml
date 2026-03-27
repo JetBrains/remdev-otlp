@@ -5,8 +5,8 @@ ij-kotlin-jvm-plugin = "2.2.0"
 ij-kotlin-serialization-plugin = "2.2.0"
 ij-platform = "2026.1"
 compose-multiplatform = "1.7.1"
-opentelemetry = "1.44.1"
-opentelemetry-alpha = "1.44.1-alpha"
+opentelemetry = "1.48.0"
+opentelemetry-alpha = "1.48.0-alpha"
 
 [libraries]
 intellij-platform-gradle = { module = "org.jetbrains.intellij.platform:intellij-platform-gradle-plugin", version.ref = "ij-gradle-plugin" }
