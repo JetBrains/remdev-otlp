@@ -13,11 +13,16 @@ class BufferingMetricExporter : MetricExporter {
     private val delegate = AtomicReference<MetricExporter?>(null)
 
     override fun export(metrics: Collection<MetricData>): CompletableResultCode {
+        val filteredMetrics = metrics.filterNot(::shouldDropMetric)
+        if (filteredMetrics.isEmpty()) {
+            return CompletableResultCode.ofSuccess()
+        }
+
         val exporter = delegate.get()
         return if (exporter != null) {
-            exporter.export(metrics)
+            exporter.export(filteredMetrics)
         } else {
-            buffer.addAll(metrics)
+            buffer.addAll(filteredMetrics)
             CompletableResultCode.ofSuccess()
         }
     }
@@ -31,7 +36,9 @@ class BufferingMetricExporter : MetricExporter {
         val buffered = mutableListOf<MetricData>()
         while (true) {
             val metric = buffer.poll() ?: break
-            buffered.add(metric)
+            if (!shouldDropMetric(metric)) {
+                buffered.add(metric)
+            }
         }
 
         if (buffered.isNotEmpty()) {
@@ -50,5 +57,15 @@ class BufferingMetricExporter : MetricExporter {
 
     override fun shutdown(): CompletableResultCode {
         return delegate.get()?.shutdown() ?: CompletableResultCode.ofSuccess()
+    }
+
+    private fun shouldDropMetric(metric: MetricData): Boolean {
+        return METRIC_EXPORT_FILTERS.any { filter -> !filter.shouldExport(metric) }
+    }
+
+    companion object {
+        private val METRIC_EXPORT_FILTERS = listOf(
+            ServerSocketWrapperBytesMetricFilter
+        )
     }
 }
