@@ -2,7 +2,7 @@
     <id>com.jetbrains.otp.diagnostic</id>
     <name>OpenTelemetry Diagnostic (Remote Development)</name>
     <vendor>JetBrains</vendor>
-    <version>1.0.15</version>
+    <version>1.1.0</version>
 
     <description><![CDATA[
         Advanced diagnostic plugin for IntelliJ Platform with OpenTelemetry integration.
@@ -22,6 +22,15 @@
             <li>Optional: Set OTEL_EXPORTER_OTLP_PROTOCOL to http/protobuf (default) or grpc</li>
         </ul>
     ]]></description>
+
+    <change-notes><![CDATA[
+        <h3>1.1.0</h3>
+        <ul>
+            <li>IntelliJ Platform 2026.1 compatibility: update Remote Development dependency and use platform's OpenTelemetry infrastructure</li>
+            <li>Fix backend module loading and OTLP exporter initialization on 2026.1+ hosts</li>
+            <li>Handle conflicting HTTP sender dependencies</li>
+        </ul>
+    ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
 

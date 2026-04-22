@@ -1,7 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
-version = "1.0.15"
+version = "1.1.0"
 plugins {
     id("intellij-platform-remdev")
 }
