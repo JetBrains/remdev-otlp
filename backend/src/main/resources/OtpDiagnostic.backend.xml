@@ -3,7 +3,7 @@
         <module name="intellij.platform.backend"/>
         <module name="intellij.platform.kernel.backend"/>
         <module name="OtpDiagnostic.shared"/>
-        <plugin id="com.jetbrains.codeWithMe"/>
+        <plugin id="com.jetbrains.remoteDevelopment"/>
     </dependencies>
 
     <extensions defaultExtensionNs="com.intellij">
