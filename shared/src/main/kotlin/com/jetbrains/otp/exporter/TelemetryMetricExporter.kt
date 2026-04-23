@@ -11,7 +11,9 @@ class TelemetryMetricExporter {
         try {
             val exporter = OtlpMetricExporterFactory.create(config)
             if (exporter != null) {
-                bufferingExporter.setDelegate(exporter)
+                bufferingExporter.setDelegate(
+                    ConfiguredAttributesMetricExporter(exporter, config.configuredSpanAttributes)
+                )
             }
         } catch (e: Exception) {
         }
