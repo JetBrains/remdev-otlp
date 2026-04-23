@@ -3,10 +3,11 @@ package com.jetbrains.otp.exporter
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.platform.diagnostic.telemetry.PlatformMetrics
+import com.intellij.platform.diagnostic.telemetry.TelemetryManager
 import com.jetbrains.otp.span.CommonSpanAttributes
 import com.jetbrains.otp.span.CommonSpanAttributesState
 import com.sun.management.OperatingSystemMXBean
-import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.ObservableDoubleGauge
@@ -22,7 +23,7 @@ class CpuUsageMetricReporter {
     private var processCpuGauge: ObservableDoubleGauge? = null
     private var systemCpuGauge: ObservableDoubleGauge? = null
 
-    fun start(rdSide: String) {
+    fun start(@Suppress("UNUSED_PARAMETER") rdSide: String) {
         if (!started.compareAndSet(false, true)) return
 
         val mxBean = operatingSystemMxBean
@@ -33,20 +34,20 @@ class CpuUsageMetricReporter {
         }
 
         try {
-            val meter = GlobalOpenTelemetry.get().getMeter(METER_NAME)
+            val meter = TelemetryManager.getMeter(PlatformMetrics)
 
             processCpuGauge = meter.gaugeBuilder(PROCESS_CPU_UTILIZATION_METRIC)
                 .setDescription("Recent CPU utilization of the current process")
                 .setUnit("1")
                 .buildWithCallback { measurement ->
-                    recordCpuLoad(measurement, mxBean.processCpuLoad, buildCommonMetricAttributes(rdSide))
+                    recordCpuLoad(measurement, mxBean.processCpuLoad)
                 }
 
             systemCpuGauge = meter.gaugeBuilder(SYSTEM_CPU_UTILIZATION_METRIC)
                 .setDescription("Recent CPU utilization of the host system")
                 .setUnit("1")
                 .buildWithCallback { measurement ->
-                    recordCpuLoad(measurement, mxBean.cpuLoad, buildCommonMetricAttributes(rdSide))
+                    recordCpuLoad(measurement, mxBean.cpuLoad)
                 }
         } catch (e: Exception) {
             started.set(false)
@@ -56,11 +57,10 @@ class CpuUsageMetricReporter {
 
     private fun recordCpuLoad(
         measurement: ObservableDoubleMeasurement,
-        rawCpuLoad: Double,
-        attributes: Attributes
+        rawCpuLoad: Double
     ) {
         val cpuLoad = normalizeCpuLoad(rawCpuLoad) ?: return
-        measurement.record(cpuLoad, attributes)
+        measurement.record(cpuLoad)
     }
 
     private fun normalizeCpuLoad(rawCpuLoad: Double): Double? {
@@ -71,7 +71,6 @@ class CpuUsageMetricReporter {
     companion object {
         const val PROCESS_CPU_UTILIZATION_METRIC = "rdct.process.cpu.utilization"
         const val SYSTEM_CPU_UTILIZATION_METRIC = "rdct.system.cpu.utilization"
-        private const val METER_NAME = "com.jetbrains.otp.diagnostic"
 
         private val LOG = Logger.getInstance(CpuUsageMetricReporter::class.java)
 
@@ -79,7 +78,7 @@ class CpuUsageMetricReporter {
     }
 }
 
-internal fun buildCommonMetricAttributes(rdSide: String): Attributes {
+internal fun buildCommonMetricAttributes(@Suppress("UNUSED_PARAMETER") rdSide: String): Attributes {
     val commonAttributes = CommonSpanAttributesState.snapshotMap()
     if (commonAttributes.isEmpty() && rdSide.isBlank()) return Attributes.empty()
 

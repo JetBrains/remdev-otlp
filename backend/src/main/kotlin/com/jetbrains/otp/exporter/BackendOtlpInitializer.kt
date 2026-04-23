@@ -7,10 +7,10 @@ import com.jetbrains.otp.span.CommonSpanAttributesState
 
 class BackendOtlpInitializer : ProjectActivity {
     override suspend fun execute(project: Project) {
+        val config = OtlpConfigFactory.fromEnv()
         CommonSpanAttributesState.put(CommonSpanAttributes.RD_SIDE, CommonSpanAttributes.SIDE_BACKEND)
         CpuUsageMetricReporter.getInstance().start(CommonSpanAttributes.SIDE_BACKEND)
         FrequentPerformanceMetricsReporter.getInstance().start(CommonSpanAttributes.SIDE_BACKEND)
-        val config = OtlpConfigFactory.fromEnv()
         TelemetrySpanExporter.getInstance().initExporter(config)
         TelemetryMetricExporter.getInstance().initExporter(config)
     }
