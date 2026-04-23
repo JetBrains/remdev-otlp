@@ -80,7 +80,7 @@ The value uses comma-separated `key=value` pairs, so:
 - `-Drdct.common.span.attributes=deployment.environment=staging` adds `deployment.environment=staging`
 - `-Drdct.common.span.attributes=deployment.environment=staging,service.instance.id=rd-backend-1` adds both attributes
 
-In Remote Development mode, these backend-defined attributes are propagated to the frontend together with the rest of the OTLP connection config and are added to every exported span on both sides.
+In Remote Development mode, these backend-defined attributes are propagated to the frontend together with the rest of the OTLP connection config and are added to every exported span and metric on both sides.
 
 ### Plugin Span Filter Source
 
