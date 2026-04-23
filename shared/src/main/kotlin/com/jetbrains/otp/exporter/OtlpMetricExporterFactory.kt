@@ -19,7 +19,7 @@ object OtlpMetricExporterFactory {
                         .setEndpoint(endpoint)
                         .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
                     OtlpSslConfigurator.configureIfSecure(endpoint, builder::setSslContext)
-                    config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
+                    config.metricHeaders.forEach { (key, value) -> builder.addHeader(key, value) }
                     builder.build()
                 }
 
@@ -28,7 +28,7 @@ object OtlpMetricExporterFactory {
                         .setEndpoint(config.endpoint)
                         .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
                     OtlpSslConfigurator.configureIfSecure(config.endpoint, builder::setSslContext)
-                    config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
+                    config.metricHeaders.forEach { (key, value) -> builder.addHeader(key, value) }
                     builder.build()
                 }
             }

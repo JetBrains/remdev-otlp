@@ -19,11 +19,22 @@ class FromBackendOtlpConfigFactory(
             val remoteConfig = cryptoRpc.getOtlpRemoteConfig()
             val settings = updateLocalSettings(remoteConfig)
             val headersStr = cryptoClient.decryptData(remoteConfig.encryptedHeaders)
+            val commonHeaders = parseOtlpHeaders(headersStr)
+            val traceHeaders = mergeOtlpHeaders(
+                commonHeaders = commonHeaders,
+                signalHeaders = parseOtlpHeaders(remoteConfig.encryptedTraceHeaders?.let(cryptoClient::decryptData))
+            )
+            val metricHeaders = mergeOtlpHeaders(
+                commonHeaders = commonHeaders,
+                signalHeaders = parseOtlpHeaders(remoteConfig.encryptedMetricHeaders?.let(cryptoClient::decryptData))
+            )
             val pluginSpanFilterEnabled = remoteConfig.pluginFilterOverride ?: settings.isPluginSpanFilterEnabled()
             val metricsExportEnabled = remoteConfig.metricsExportOverride ?: settings.isMetricsExportEnabled()
             return OtlpConfig(
                 endpoint = remoteConfig.endpoint,
-                headers = parseOtlpHeaders(headersStr),
+                headers = commonHeaders,
+                traceHeaders = traceHeaders,
+                metricHeaders = metricHeaders,
                 protocol = remoteConfig.protocol ?: readOtlpProtocolFromPropertyOrEnv(),
                 timeoutSeconds = timeoutSeconds,
                 isPluginSpanFilterEnabled = pluginSpanFilterEnabled,

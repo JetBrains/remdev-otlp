@@ -18,6 +18,8 @@ enum class OtlpProtocol {
 data class OtlpConfig(
     val endpoint: String,
     val headers: Map<String, String>,
+    val traceHeaders: Map<String, String> = headers,
+    val metricHeaders: Map<String, String> = headers,
     val protocol: OtlpProtocol,
     val timeoutSeconds: Long,
     val isPluginSpanFilterEnabled: Boolean,
@@ -30,6 +32,8 @@ object OtlpConfigFactory {
         return OtlpConfig(
             endpoint = readOtlpEndpointFromPropertyOrEnv(),
             headers = readOtlpHeadersFromPropertyOrEnv(),
+            traceHeaders = readOtlpTraceHeadersFromPropertyOrEnv(),
+            metricHeaders = readOtlpMetricHeadersFromPropertyOrEnv(),
             protocol = readOtlpProtocolFromPropertyOrEnv(),
             timeoutSeconds = timeoutSeconds,
             isPluginSpanFilterEnabled = OtpDiagnosticSettings.getInstance().pluginFilterEnabledEffective(),
@@ -43,6 +47,10 @@ const val OTLP_ENDPOINT_PROPERTY = "otel.exporter.otlp.endpoint"
 const val OTLP_ENDPOINT_ENV = "OTEL_EXPORTER_OTLP_ENDPOINT"
 const val OTLP_HEADERS_PROPERTY = "otel.exporter.otlp.headers"
 const val OTLP_HEADERS_ENV = "OTEL_EXPORTER_OTLP_HEADERS"
+const val OTLP_TRACES_HEADERS_PROPERTY = "otel.exporter.otlp.traces.headers"
+const val OTLP_TRACES_HEADERS_ENV = "OTEL_EXPORTER_OTLP_TRACES_HEADERS"
+const val OTLP_METRICS_HEADERS_PROPERTY = "otel.exporter.otlp.metrics.headers"
+const val OTLP_METRICS_HEADERS_ENV = "OTEL_EXPORTER_OTLP_METRICS_HEADERS"
 const val OTLP_PROTOCOL_PROPERTY = "otel.exporter.otlp.protocol"
 const val OTLP_PROTOCOL_ENV = "OTEL_EXPORTER_OTLP_PROTOCOL"
 const val DEFAULT_OTLP_ENDPOINT = "http://localhost"
@@ -59,8 +67,38 @@ fun readRawOtlpHeadersFromPropertyOrEnv(defaultValue: String = ""): String {
         ?: defaultValue
 }
 
+fun readRawOtlpTraceHeadersFromPropertyOrEnv(defaultValue: String = ""): String {
+    return System.getProperty(OTLP_TRACES_HEADERS_PROPERTY)
+        ?: System.getenv(OTLP_TRACES_HEADERS_ENV)
+        ?: defaultValue
+}
+
+fun readRawOtlpMetricHeadersFromPropertyOrEnv(defaultValue: String = ""): String {
+    return System.getProperty(OTLP_METRICS_HEADERS_PROPERTY)
+        ?: System.getenv(OTLP_METRICS_HEADERS_ENV)
+        ?: defaultValue
+}
+
 fun readOtlpHeadersFromPropertyOrEnv(): Map<String, String> {
     return parseOtlpHeaders(readRawOtlpHeadersFromPropertyOrEnv())
+}
+
+fun readOtlpTraceHeadersFromPropertyOrEnv(): Map<String, String> {
+    return mergeOtlpHeaders(
+        commonHeaders = readOtlpHeadersFromPropertyOrEnv(),
+        signalHeaders = parseOtlpHeaders(readRawOtlpTraceHeadersFromPropertyOrEnv())
+    )
+}
+
+fun readOtlpMetricHeadersFromPropertyOrEnv(): Map<String, String> {
+    return mergeOtlpHeaders(
+        commonHeaders = readOtlpHeadersFromPropertyOrEnv(),
+        signalHeaders = parseOtlpHeaders(readRawOtlpMetricHeadersFromPropertyOrEnv())
+    )
+}
+
+fun mergeOtlpHeaders(commonHeaders: Map<String, String>, signalHeaders: Map<String, String>): Map<String, String> {
+    return if (signalHeaders.isEmpty()) commonHeaders else commonHeaders + signalHeaders
 }
 
 fun readOtlpProtocolFromPropertyOrEnv(defaultValue: OtlpProtocol = OtlpProtocol.HTTP_PROTOBUF): OtlpProtocol {
@@ -164,7 +202,7 @@ object OtlpSpanExporterFactory {
                         .setEndpoint(endpoint)
                         .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
                     OtlpSslConfigurator.configureIfSecure(endpoint, builder::setSslContext)
-                    config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
+                    config.traceHeaders.forEach { (key, value) -> builder.addHeader(key, value) }
                     builder.build()
                 }
 
@@ -173,7 +211,7 @@ object OtlpSpanExporterFactory {
                         .setEndpoint(config.endpoint)
                         .setTimeout(config.timeoutSeconds, TimeUnit.SECONDS)
                     OtlpSslConfigurator.configureIfSecure(config.endpoint, builder::setSslContext)
-                    config.headers.forEach { (key, value) -> builder.addHeader(key, value) }
+                    config.traceHeaders.forEach { (key, value) -> builder.addHeader(key, value) }
                     builder.build()
                 }
             }
