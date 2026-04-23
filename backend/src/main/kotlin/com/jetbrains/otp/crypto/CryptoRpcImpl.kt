@@ -8,6 +8,8 @@ import com.jetbrains.otp.exporter.readConfiguredSpanAttributesFromPropertyOrEnv
 import com.jetbrains.otp.exporter.readOtlpEndpointFromPropertyOrEnv
 import com.jetbrains.otp.exporter.readOtlpProtocolFromPropertyOrEnv
 import com.jetbrains.otp.exporter.readRawOtlpHeadersFromPropertyOrEnv
+import com.jetbrains.otp.exporter.readRawOtlpMetricHeadersFromPropertyOrEnv
+import com.jetbrains.otp.exporter.readRawOtlpTraceHeadersFromPropertyOrEnv
 import com.jetbrains.otp.settings.OtpDiagnosticSettings
 
 internal class CryptoRpcImpl : CryptoRpc {
@@ -23,6 +25,8 @@ internal class CryptoRpcImpl : CryptoRpc {
 
     override suspend fun getOtlpRemoteConfig(): OtlpRemoteConfig {
         val headersStr = readRawOtlpHeadersFromPropertyOrEnv()
+        val traceHeadersStr = readRawOtlpTraceHeadersFromPropertyOrEnv()
+        val metricHeadersStr = readRawOtlpMetricHeadersFromPropertyOrEnv()
         val settings = OtpDiagnosticSettings.getInstance()
         val pluginFilterOverride = if (hasPluginFilterOverride()) settings.pluginFilterEnabledEffective() else null
         val metricsExportOverride = if (hasMetricsExportOverride()) settings.metricsExportEnabledEffective() else null
@@ -34,6 +38,8 @@ internal class CryptoRpcImpl : CryptoRpc {
         return OtlpRemoteConfig(
             endpoint = readOtlpEndpointFromPropertyOrEnv(),
             encryptedHeaders = cryptoService.encryptData(headersStr),
+            encryptedTraceHeaders = cryptoService.encryptData(traceHeadersStr),
+            encryptedMetricHeaders = cryptoService.encryptData(metricHeadersStr),
             configuredSpanAttributes = readConfiguredSpanAttributesFromPropertyOrEnv(),
             protocol = readOtlpProtocolFromPropertyOrEnv(),
             pluginFilterOverride = pluginFilterOverride,

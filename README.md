@@ -27,6 +27,22 @@ Headers follow the standard [OTEL_EXPORTER_OTLP_HEADERS](https://opentelemetry.i
 
 The plugin automatically propagates the headers securely from backend to frontend via encrypted RPC.
 
+Signal-specific headers are also supported and override common headers with the same key:
+
+```bash
+export OTEL_EXPORTER_OTLP_TRACES_HEADERS="x-honeycomb-dataset=your_trace_dataset"
+export OTEL_EXPORTER_OTLP_METRICS_HEADERS="x-honeycomb-dataset=your_metrics_dataset"
+```
+
+Equivalent system properties:
+
+```bash
+-Dotel.exporter.otlp.traces.headers=x-honeycomb-dataset=your_trace_dataset
+-Dotel.exporter.otlp.metrics.headers=x-honeycomb-dataset=your_metrics_dataset
+```
+
+For Honeycomb, set `OTEL_EXPORTER_OTLP_METRICS_HEADERS` (or `otel.exporter.otlp.metrics.headers`) when metrics should go to a dataset other than Honeycomb's fallback `unknown_metrics`.
+
 ### Backend OTLP Endpoint (optional)
 
 **Environment Variable:**
