@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Service(Service.Level.APP)
 class FrequentPerformanceMetricsReporter(
@@ -40,14 +41,14 @@ class FrequentPerformanceMetricsReporter(
                 while (isActive) {
                     if (!isWindowMetricsReportingEnabled()) {
                         clearCollectedWindowState()
-                        delay(SAMPLING_PERIOD_MILLIS)
+                        delay(SAMPLING_PERIOD_MILLIS.milliseconds)
                         continue
                     }
 
                     val now = System.currentTimeMillis()
                     sampleCollector.collectSample(now)?.let(windowStorage::addSample)
                     reportIfContinuousModeActive(now)
-                    delay(SAMPLING_PERIOD_MILLIS)
+                    delay(SAMPLING_PERIOD_MILLIS.milliseconds)
                 }
             }
         } catch (e: Exception) {
