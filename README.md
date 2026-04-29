@@ -98,6 +98,8 @@ The value uses comma-separated `key=value` pairs, so:
 
 In Remote Development mode, these backend-defined attributes are propagated to the frontend together with the rest of the OTLP connection config and are added to every exported span and metric on both sides.
 
+The plugin also automatically adds `plugin.version` from the installed plugin descriptor, which is patched from the Gradle project version during the build.
+
 ### Plugin Span Filter Source
 
 `isPluginSpanFilterEnabled` is resolved in this order:

@@ -2,6 +2,7 @@ package com.jetbrains.otp.span
 
 object CommonSpanAttributes {
     const val RD_SIDE = "rd.platform.type"
+    const val PLUGIN_VERSION = "plugin.version"
     const val SIDE_FRONTEND = "frontend"
     const val SIDE_BACKEND = "backend"
     const val HOST_NAME = "host.name"
