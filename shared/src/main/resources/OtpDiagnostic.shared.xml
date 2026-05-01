@@ -1,4 +1,8 @@
 <idea-plugin>
+    <dependencies>
+        <module name="intellij.platform.rpc"/>
+    </dependencies>
+
     <extensionPoints>
         <extensionPoint name="allowedMetricsProvider"
                         interface="com.jetbrains.otp.exporter.AllowedMetricsProvider"

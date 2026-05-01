@@ -2,8 +2,16 @@
     <dependencies>
         <module name="intellij.platform.backend"/>
         <module name="intellij.platform.kernel.backend"/>
+        <module name="intellij.platform.rpc"/>
+        <module name="intellij.platform.rpc.backend"/>
         <module name="OtpDiagnostic.shared"/>
+        <plugin id="com.jetbrains.remoteDevelopment"/>
     </dependencies>
+
+    <applicationListeners>
+        <listener class="com.jetbrains.otp.connection.OtpWireTransportListener"
+                  topic="com.intellij.platform.split.connection.protocol.transport.WireTransportListener"/>
+    </applicationListeners>
 
     <extensions defaultExtensionNs="com.intellij">
         <openTelemetryExporterProvider implementation="com.jetbrains.otp.exporter.BackendMetricExporter"/>
