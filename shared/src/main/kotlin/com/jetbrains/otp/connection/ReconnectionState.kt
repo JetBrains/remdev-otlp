@@ -31,6 +31,7 @@ class ReconnectionState(
             .apply {
                 setStatus(StatusCode.ERROR)
                 setAttributes(context)
+                setMainThreadStatusAttribute()
             }
     }
 
@@ -52,8 +53,17 @@ class ReconnectionState(
         }
     }
 
+    private fun Span.setMainThreadStatusAttribute() {
+        val (isModalDialogOpened, isMainThreadStatusCheckTimedOut) = checkMainThreadStatus()
+        if (isMainThreadStatusCheckTimedOut) return
+
+        setAttribute(MODAL_DIALOG_OPENED_ATTRIBUTE, isModalDialogOpened)
+    }
+
     private companion object {
         val LOG = Logger.getInstance(ReconnectionState::class.java)
+
+        const val MODAL_DIALOG_OPENED_ATTRIBUTE = "modal.dialog.opened"
     }
 }
 

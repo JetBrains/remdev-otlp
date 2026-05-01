@@ -11,7 +11,7 @@ class OtpWireTransportListener : WireTransportListener {
     private val stateByClientId = ConcurrentHashMap<String, ReconnectionState>()
 
     override fun transportConnected(clientId: ClientId, transport: TransportInfo) {
-        clientState(clientId).connected(connectedContext(clientId, transport))
+        clientState(clientId).connected(connectedContext(clientId))
     }
 
     override fun transportDisconnected(clientId: ClientId, transport: TransportInfo) {
@@ -25,7 +25,7 @@ class OtpWireTransportListener : WireTransportListener {
     ) {
         val clientState = clientState(clientId)
         when {
-            state == ConnectionState.CONNECTED -> clientState.connected(connectedContext(clientId, transport))
+            state == ConnectionState.CONNECTED -> clientState.connected(connectedContext(clientId))
             !state.isAlive -> clientState.disconnected()
         }
     }
@@ -34,10 +34,9 @@ class OtpWireTransportListener : WireTransportListener {
         return stateByClientId.computeIfAbsent(clientId.value) { ReconnectionState(RECONNECTION_SPAN_CONFIG) }
     }
 
-    private fun connectedContext(clientId: ClientId, transport: TransportInfo): Map<String, String> {
+    private fun connectedContext(clientId: ClientId): Map<String, String> {
         return mapOf(
-            CLIENT_ID_ATTRIBUTE to clientId.value,
-            RECONNECTED_TRANSPORT_ATTRIBUTE to transport.name,
+            CLIENT_ID_ATTRIBUTE to clientId.value
         )
     }
 
@@ -45,7 +44,6 @@ class OtpWireTransportListener : WireTransportListener {
         const val RECONNECTION_SPAN_NAME = "backend-connection-dropped-reconnecting"
 
         const val CLIENT_ID_ATTRIBUTE = "client.id"
-        const val RECONNECTED_TRANSPORT_ATTRIBUTE = "transport.reconnected.name"
 
         val RECONNECTION_SPAN_CONFIG = ReconnectionSpanConfig(
             spanName = RECONNECTION_SPAN_NAME,
