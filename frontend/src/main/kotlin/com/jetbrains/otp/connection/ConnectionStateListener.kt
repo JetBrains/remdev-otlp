@@ -32,7 +32,10 @@ class ConnectionStateListener : ProjectActivity {
                     reconnectionSpan?.end()
                     reconnectionSpan = tracer.spanBuilder("connection-dropped-reconnecting")
                         .startSpan()
-                    reconnectionSpan?.setStatus(StatusCode.ERROR)
+                        .apply {
+                            setStatus(StatusCode.ERROR)
+                            setMainThreadStatusAttribute()
+                        }
                 }
                 is ThinClientConnectionState.Connected -> {
                     if (connected == true) return@advise
@@ -46,7 +49,16 @@ class ConnectionStateListener : ProjectActivity {
         }
     }
 
+    private fun Span.setMainThreadStatusAttribute() {
+        val (isModalDialogOpened, isMainThreadStatusCheckTimedOut) = checkMainThreadStatus()
+        if (isMainThreadStatusCheckTimedOut) return
+
+        setAttribute(MODAL_DIALOG_OPENED_ATTRIBUTE, isModalDialogOpened)
+    }
+
     companion object {
         private val LOG = Logger.getInstance(ConnectionStateListener::class.java)
+
+        private const val MODAL_DIALOG_OPENED_ATTRIBUTE = "modal.dialog.opened"
     }
 }
