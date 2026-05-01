@@ -6,6 +6,11 @@
         <plugin id="com.jetbrains.codeWithMe"/>
     </dependencies>
 
+    <applicationListeners>
+        <listener class="com.jetbrains.otp.connection.OtpWireTransportListener"
+                  topic="com.intellij.platform.split.connection.protocol.transport.WireTransportListener"/>
+    </applicationListeners>
+
     <extensions defaultExtensionNs="com.intellij">
         <openTelemetryExporterProvider implementation="com.jetbrains.otp.exporter.BackendMetricExporter"/>
 
