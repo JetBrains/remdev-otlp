@@ -19,6 +19,7 @@
         <openTelemetryExporterProvider implementation="com.jetbrains.otp.exporter.FrontendMetricExporter"/>
 
         <postStartupActivity implementation="com.jetbrains.otp.exporter.FrontendOtlpInitializer"/>
+        <postStartupActivity implementation="com.jetbrains.otp.exporter.FrontendPingMetricReporter"/>
         <postStartupActivity implementation="com.jetbrains.otp.connection.ConnectionStateListener"/>
 
         <applicationConfigurable
