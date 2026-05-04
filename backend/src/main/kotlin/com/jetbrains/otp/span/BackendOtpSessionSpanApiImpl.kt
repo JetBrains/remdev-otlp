@@ -12,6 +12,6 @@ internal class BackendOtpSessionSpanApiImpl : OtpSessionSpanApi {
         CommonSpanAttributesState.upsert(commonSpanAttributes)
         CommonSpanAttributesState.put(CommonSpanAttributes.RD_SIDE, CommonSpanAttributes.SIDE_BACKEND)
         CommonSpanAttributesState.put(CommonSpanAttributes.PROCESS_ID, ProcessHandle.current().pid().toString())
-        SessionProcessor.onSessionInitialized(spanId, traceId)
+        SessionProcessor.onSessionInitialized(spanId, traceId, createMetadataSpan = false)
     }
 }

@@ -39,7 +39,7 @@ object SessionProcessor : SpanProcessor {
 
     override fun getOrder(): Int = 0
 
-    fun onSessionInitialized(spanId: String, traceId: String) {
+    fun onSessionInitialized(spanId: String, traceId: String, createMetadataSpan: Boolean = true) {
         val spans = synchronized(bufferLock) {
             if (sessionInitialized) {
                 LOG.debug("Session already initialized, ignoring duplicate call")
@@ -64,7 +64,9 @@ object SessionProcessor : SpanProcessor {
         }
 
         val earliestStartTime = spans.minOfOrNull { it.startEpochNanos } ?: System.nanoTime()
-        createMetaSpan(earliestStartTime)
+        if (createMetadataSpan) {
+            createMetaSpan(earliestStartTime)
+        }
         TelemetrySpanExporter.getInstance().sendSpans(spans)
     }
 
