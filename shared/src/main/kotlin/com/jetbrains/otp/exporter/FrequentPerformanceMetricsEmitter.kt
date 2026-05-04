@@ -1,6 +1,5 @@
 package com.jetbrains.otp.exporter
 
-import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.DoubleGauge
 import io.opentelemetry.api.metrics.DoubleHistogram
@@ -108,9 +107,7 @@ internal class FrequentPerformanceMetricsEmitter {
             .build()
     }
 
-    private val meter by lazy {
-        GlobalOpenTelemetry.get().getMeter(METER_NAME)
-    }
+    private val meter by lazy(::diagnosticMeter)
 
     companion object {
         const val PROCESS_CPU_WINDOW_SAMPLES_METRIC = "rdct.process.cpu.utilization.window.samples"
@@ -125,7 +122,5 @@ internal class FrequentPerformanceMetricsEmitter {
         const val PROCESS_USED_MEMORY_WINDOW_MAX_METRIC = "rdct.process.memory.used.window.max"
         const val SYSTEM_USED_MEMORY_WINDOW_AVERAGE_METRIC = "rdct.system.memory.used.window.avg"
         const val SYSTEM_USED_MEMORY_WINDOW_MAX_METRIC = "rdct.system.memory.used.window.max"
-
-        private const val METER_NAME = "com.jetbrains.otp.diagnostic"
     }
 }
