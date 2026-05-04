@@ -46,6 +46,13 @@ dependencies {
 }
 
 intellijPlatform {
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild.set("253")
+            untilBuild.set("253.*")
+        }
+    }
+
     splitMode = true
     splitModeTarget = SplitModeTarget.BOTH
 
