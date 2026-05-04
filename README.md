@@ -202,10 +202,13 @@ Tracks the duration of connection drops and reconnection attempts.
 
 **Attributes:**
 - `project` (string): Name of the affected project
+- `reconnection.throttled.drop_count` (long): Number of reconnect-drop transitions suppressed before this span
 
 **Parent:** Current session span (`remote-dev-session` or `application-idle`)
 
 **Use case:** Measure reconnection latency and identify connection stability issues.
+
+**Note:** Reconnection spans use a process-wide adaptive cooldown. After an emitted span closes, another span is allowed after 6 minutes; every suppressed reconnect attempt during that cooldown extends the next cooldown exponentially, capped at 1 hour. Suppressed reconnect flaps do not force on-demand performance metrics or UI-thread status checks.
 
 ---
 
