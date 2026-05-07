@@ -32,7 +32,7 @@ tasks.named<PatchPluginXmlTask>("patchPluginXml") {
     dependsOn(inlineModuleDescriptorsIntoPluginXml)
     inputFile.set(generatedRootPluginXml)
     sinceBuild.set("261")
-    untilBuild.set("261.*")
+    untilBuild.set(provider { null })
 }
 
 dependencies {
