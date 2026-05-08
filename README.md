@@ -225,6 +225,28 @@ Captures UI freeze events with accurate timing based on freeze duration.
 
 ---
 
+### 6. `ide-exception`
+
+Captures uncaught IDE exceptions as short-lived error spans.
+
+**Created when:** The IntelliJ Platform logs an error with a throwable
+
+**Attributes:**
+- `exception.type` (string): Exception class name
+- `exception.message` (string): Exception message when available
+- `exception.stacktrace` (string): Exception stack trace, truncated to 64 KiB
+- `exception.source` (string): Reporting path (`platform-log`)
+- `plugin` (string): Plugin ID blamed by the platform when available
+- `log.logger` (string): Logger name from the platform log record
+- `log.level` (string): Log level from the platform log record
+- `log.message` (string): Message from the platform log record
+
+**Parent:** Current session span (`remote-dev-session` or `application-idle`)
+
+**Note:** Coroutine exceptions are reported through IntelliJ's platform exception handler, which logs them once via `Logger.error`; this plugin converts that platform log record into a span instead of installing a second coroutine reporter.
+
+---
+
 ## Long-Running Spans
 
 Some spans, particularly `remote-dev-session`, are designed to be long-running and may remain open for extended periods (hours or even days) until the session ends. This is normal behavior for session-tracking spans.

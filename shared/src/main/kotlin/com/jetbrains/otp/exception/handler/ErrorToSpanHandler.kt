@@ -1,19 +1,29 @@
 package com.jetbrains.otp.exception.handler
 
 import com.intellij.ide.plugins.PluginUtil
-import com.jetbrains.otp.span.DefaultRootSpanService
-import io.opentelemetry.api.common.AttributeKey
-import io.opentelemetry.api.common.Attributes
 import java.util.logging.Handler
+import java.util.logging.Level
 import java.util.logging.LogRecord
 
 object ErrorToSpanHandler : Handler() {
     override fun publish(record: LogRecord?) {
-        val throwable = record?.thrown ?: return
-        val plugin = PluginUtil.getInstance().findPluginId(throwable)?.idString
-        val attributes: Attributes = plugin?.let { Attributes.of(AttributeKey.stringKey("plugin"), it) }
-            ?: Attributes.empty()
-        DefaultRootSpanService.currentSpan().recordException(throwable, attributes)
+        if (record == null || record.level.intValue() < Level.SEVERE.intValue()) return
+
+        val throwable = record.thrown ?: return
+        val plugin = runCatching {
+            PluginUtil.getInstance().findPluginId(throwable)?.idString
+        }.getOrNull()
+        runCatching {
+            ExceptionSpanReporter.report(
+                exception = throwable,
+                context = mapOf(
+                    "plugin" to plugin,
+                    "log.logger" to record.loggerName,
+                    "log.level" to record.level.name,
+                    "log.message" to record.message,
+                )
+            )
+        }
     }
 
     override fun flush() {}
