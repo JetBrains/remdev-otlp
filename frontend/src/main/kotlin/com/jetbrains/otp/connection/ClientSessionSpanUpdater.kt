@@ -2,11 +2,11 @@ package com.jetbrains.otp.connection
 
 import com.intellij.openapi.client.ClientAppSession
 import com.intellij.platform.frontend.split.connection.ConnectionInfoProvider
+import com.jetbrains.otp.api.OtpSessionSpanApi
+import com.jetbrains.otp.exporter.processor.SessionProcessor
 import com.jetbrains.otp.span.CommonSpanAttributes
 import com.jetbrains.otp.span.CommonSpanAttributesState
 import com.jetbrains.otp.span.DefaultRootSpanService
-import com.jetbrains.otp.api.OtpSessionSpanApi
-import com.jetbrains.otp.exporter.processor.SessionProcessor
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rdclient.connection.ClientSessionListener
 import com.jetbrains.thinclient.ThinClientId
@@ -19,10 +19,8 @@ class ClientSessionSpanUpdater : ClientSessionListener {
         session: ClientAppSession
     ) {
         val sessionSpan = DefaultRootSpanService.getInstance().startSessionSpan(ThinClientId.Instance.value)
-        val hostName = ConnectionInfoProvider.getBackendName()
         val sessionId = session.clientId.value
         val processId = ProcessHandle.current().pid().toString()
-        CommonSpanAttributesState.put(CommonSpanAttributes.HOST_NAME, hostName)
         CommonSpanAttributesState.put(CommonSpanAttributes.SESSION_ID, sessionId)
         CommonSpanAttributesState.put(CommonSpanAttributes.PROCESS_ID, processId)
 
@@ -34,7 +32,7 @@ class ClientSessionSpanUpdater : ClientSessionListener {
         notifyBackendAboutSessionStart(
             sessionSpan.spanContext.spanId,
             sessionSpan.spanContext.traceId,
-            CommonSpanAttributesState.snapshotMap()
+            CommonSpanAttributesState.snapshotMap() + (CommonSpanAttributes.HOST_NAME to ConnectionInfoProvider.getBackendName())
         )
 
         lifetime.onTermination {
