@@ -22,8 +22,7 @@ class ConfiguredAttributesMetricExporter(
         }
 
         val additionalAttributes = mergeConfiguredAndRuntimeAttributes()
-        val metricsToExport = if (additionalAttributes.isEmpty) metrics
-        else metrics.map { MetricDataWithConfiguredAttributes(it, additionalAttributes) }
+        val metricsToExport = metrics.map { MetricDataWithConfiguredAttributes(it, additionalAttributes) }
 
         return delegate.export(metricsToExport)
     }
@@ -51,7 +50,13 @@ private class MetricDataWithConfiguredAttributes(
     private val additionalAttributes: Attributes,
 ) : MetricData by delegate {
     override fun getResource(): Resource {
-        return delegate.resource.merge(Resource.create(additionalAttributes))
+        val resource = if (additionalAttributes.isEmpty) {
+            delegate.resource
+        } else {
+            delegate.resource.merge(Resource.create(additionalAttributes))
+        }
+
+        return TelemetryAttributeRenamer.rename(resource)
     }
 }
 

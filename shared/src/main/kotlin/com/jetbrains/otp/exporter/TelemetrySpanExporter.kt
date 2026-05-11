@@ -10,6 +10,7 @@ import com.jetbrains.otp.exporter.processor.SessionProcessor
 import com.jetbrains.otp.exporter.processor.SpanScopeFilterProcessor
 import com.jetbrains.otp.exporter.processor.SpanProcessor
 import com.jetbrains.otp.exporter.processor.SpanProcessorProvider
+import com.jetbrains.otp.exporter.processor.TelemetryAttributeRenamingProcessor
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import java.util.concurrent.TimeUnit
@@ -38,7 +39,8 @@ class TelemetrySpanExporter {
             FrequentSpanFilterProcessor,
             SpanScopeFilterProcessor,
             SessionProcessor,
-            CommonAttributesProcessor
+            CommonAttributesProcessor,
+            TelemetryAttributeRenamingProcessor
         )
 
         SpanProcessorProvider.EP_NAME.extensionList.forEach { provider ->
