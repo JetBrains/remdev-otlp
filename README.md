@@ -98,7 +98,10 @@ The value uses comma-separated `key=value` pairs, so:
 
 In Remote Development mode, these backend-defined attributes are propagated to the frontend together with the rest of the OTLP connection config and are added to every exported span and metric on both sides.
 
-The plugin also automatically adds `plugin.version` from the installed plugin descriptor, which is patched from the Gradle project version during the build.
+The plugin also automatically adds:
+- `plugin.version`: installed plugin version
+- `idea.version`: IDE product version, for example `2026.1.1`
+- `idea.build`: IDE product build number, for example `IU-261.23567.138`
 
 ### Plugin Span Filter Source
 
