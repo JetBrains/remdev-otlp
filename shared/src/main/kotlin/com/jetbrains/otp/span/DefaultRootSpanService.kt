@@ -8,6 +8,9 @@ import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanContext
+import io.opentelemetry.api.trace.TraceFlags
+import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Scope
 
 
@@ -56,6 +59,24 @@ class DefaultRootSpanService : AppLifecycleListener {
         currentSpan?.end()
         currentSpan = null
         currentScope = null
+    }
+
+    @Synchronized
+    fun adoptRemoteSessionSpan(spanId: String, traceId: String) {
+        defaultSpan?.end()
+        defaultSpan = null
+
+        currentScope?.close()
+        currentScope = null
+        currentSpan?.end()
+        currentSpan = Span.wrap(
+            SpanContext.create(
+                traceId,
+                spanId,
+                TraceFlags.getSampled(),
+                TraceState.getDefault()
+            )
+        )
     }
 
     @Synchronized

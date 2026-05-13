@@ -1,12 +1,13 @@
 package com.jetbrains.otp.exporter
 
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.util.ExecUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 import com.jetbrains.otp.exporter.processor.BufferingWrapperProcessor
 import com.jetbrains.otp.span.CommonSpanAttributes
 import com.jetbrains.otp.span.CommonSpanAttributesInitializer
 import com.jetbrains.otp.span.CommonSpanAttributesState
-import java.util.concurrent.TimeUnit
 
 class FrontendOtlpInitializer : ProjectActivity {
     override suspend fun execute(project: Project) {
@@ -32,20 +33,11 @@ class FrontendOtlpInitializer : ProjectActivity {
 
     private fun hostNameFromCommand(): String? {
         return try {
-            val process = ProcessBuilder("hostname")
-                .redirectErrorStream(true)
-                .start()
+            val commandLine = GeneralCommandLine("hostname").withRedirectErrorStream(true)
+            val output = ExecUtil.execAndGetOutput(commandLine, 1_000)
+            if (output.isTimeout || output.exitCode != 0) return null
 
-            if (!process.waitFor(1, TimeUnit.SECONDS)) {
-                process.destroyForcibly()
-                return null
-            }
-
-            if (process.exitValue() != 0) return null
-
-            process.inputStream.bufferedReader().use { reader ->
-                reader.readText().trim().takeIf { it.isNotEmpty() }
-            }
+            output.stdout.trim().takeIf { it.isNotEmpty() }
         } catch (_: Exception) {
             null
         }

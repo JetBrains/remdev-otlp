@@ -32,8 +32,11 @@ object SessionProcessor : SpanProcessor {
             return emptyList()
         }
 
-        val spansAfterEventCollection = collectEventsFromApplicationInit(bufferedEvents)
-        val spansAfterParentAttachment = attachSessionParent(spansAfterEventCollection)
+        val applicationInitProcessing = collectEventsFromApplicationInit(bufferedEvents)
+        val spansAfterParentAttachment = attachSessionParent(
+            applicationInitProcessing.spans,
+            applicationInitProcessing.filteredRootContextKeys
+        )
         return attachBufferedEvents(spansAfterParentAttachment)
     }
 
@@ -98,36 +101,35 @@ object SessionProcessor : SpanProcessor {
         }
     }
 
-    private fun collectEventsFromApplicationInit(spans: Collection<SpanData>): Collection<SpanData> {
+    private fun collectEventsFromApplicationInit(spans: Collection<SpanData>): ApplicationInitProcessingResult {
         val filteredSpans = mutableListOf<SpanData>()
+        val filteredRootContextKeys = mutableSetOf<String>()
 
         for (span in spans) {
-            if (span.name == "application-init") {
+            if (span.name == APPLICATION_INIT_SPAN_NAME) {
                 synchronized(eventsLock) {
                     collectedEvents.addAll(span.events)
                 }
+                filteredRootContextKeys += spanContextKey(span.spanContext)
                 LOG.debug("Captured ${span.events.size} events from application-init span, filtering it out from export")
             } else {
                 filteredSpans.add(span)
             }
         }
 
-        return filteredSpans
+        return ApplicationInitProcessingResult(filteredSpans, filteredRootContextKeys)
     }
 
-    private fun attachSessionParent(spans: Collection<SpanData>): Collection<SpanData> {
+    private fun attachSessionParent(
+        spans: Collection<SpanData>,
+        filteredRootContextKeys: Set<String> = emptySet(),
+    ): Collection<SpanData> {
         val context = sessionSpanContext
         if (context == null || !context.isValid) {
             return spans
         }
 
-        return spans.map { span ->
-            if (!span.parentSpanContext.isValid && span.name != "remote-dev-session") {
-                SpanDelegatingData(span, newParent = context)
-            } else {
-                span
-            }
-        }
+        return spans.map { span -> reparentToSession(span, context, filteredRootContextKeys) }
     }
 
     private fun attachBufferedEvents(spans: Collection<SpanData>): Collection<SpanData> {
@@ -157,5 +159,28 @@ object SessionProcessor : SpanProcessor {
         }
     }
 
+    internal fun reparentToSession(
+        span: SpanData,
+        context: SpanContext,
+        filteredRootContextKeys: Set<String> = emptySet(),
+    ): SpanData {
+        if (span.name == SESSION_SPAN_NAME) {
+            return span
+        }
+        if (span.parentSpanContext.isValid && spanContextKey(span.parentSpanContext) !in filteredRootContextKeys) {
+            return span
+        }
+        return SpanDelegatingData(span, newParent = context)
+    }
+
+    private fun spanContextKey(context: SpanContext): String = "${context.traceId}:${context.spanId}"
+
+    private data class ApplicationInitProcessingResult(
+        val spans: Collection<SpanData>,
+        val filteredRootContextKeys: Set<String>,
+    )
+
     private val LOG = Logger.getInstance(SessionProcessor::class.java)
+    private const val APPLICATION_INIT_SPAN_NAME = "application-init"
+    private const val SESSION_SPAN_NAME = "remote-dev-session"
 }

@@ -9,6 +9,7 @@ internal class BackendOtpSessionSpanApiImpl : OtpSessionSpanApi {
         traceId: String,
         commonSpanAttributes: Map<String, String>
     ) {
+        DefaultRootSpanService.getInstance().adoptRemoteSessionSpan(spanId, traceId)
         CommonSpanAttributesState.upsert(commonSpanAttributes)
         CommonSpanAttributesState.put(CommonSpanAttributes.RD_SIDE, CommonSpanAttributes.SIDE_BACKEND)
         CommonSpanAttributesState.put(CommonSpanAttributes.PROCESS_ID, ProcessHandle.current().pid().toString())

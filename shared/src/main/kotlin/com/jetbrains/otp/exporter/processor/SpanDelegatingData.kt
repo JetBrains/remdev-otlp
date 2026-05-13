@@ -13,9 +13,18 @@ class SpanDelegatingData(
     private val additionalEvents: List<EventData> = emptyList(),
     private val additionalAttributes: Attributes? = null
 ) : SpanData by delegate {
+    private val delegatedSpanContext: SpanContext? = newParent?.let {
+        SpanContext.create(
+            it.traceId,
+            delegate.spanId,
+            delegate.spanContext.traceFlags,
+            delegate.spanContext.traceState
+        )
+    }
 
-    override fun getTraceId(): String = newParent?.traceId ?: delegate.traceId
-    override fun getSpanId(): String = delegate.spanId
+    override fun getSpanContext(): SpanContext = delegatedSpanContext ?: delegate.spanContext
+    override fun getTraceId(): String = spanContext.traceId
+    override fun getSpanId(): String = spanContext.spanId
     override fun getParentSpanContext(): SpanContext = newParent ?: delegate.parentSpanContext
     override fun getParentSpanId(): String = newParent?.spanId ?: delegate.parentSpanId
     override fun getInstrumentationScopeInfo(): InstrumentationScopeInfo = delegate.instrumentationScopeInfo
