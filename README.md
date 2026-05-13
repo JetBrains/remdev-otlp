@@ -228,11 +228,12 @@ Captures UI freeze events with accurate timing based on freeze duration.
 
 ---
 
-### 6. `ide-exception`
+### 6. `ide-exception.<ExceptionClass>`
 
 Captures uncaught IDE exceptions as short-lived error spans.
 
 **Created when:** The IntelliJ Platform logs an error with a throwable
+**Name:** `ide-exception.<ExceptionClass>` (for example `ide-exception.IllegalStateException`)
 
 **Attributes:**
 - `exception.type` (string): Exception class name
