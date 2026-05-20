@@ -103,6 +103,18 @@ The plugin also automatically adds:
 - `idea.version`: IDE product version, for example `2026.1.1`
 - `idea.build`: IDE product build number, for example `IU-261.23567.138`
 
+### Frontend Xmx Sync (optional)
+
+Set this on the backend as a system property:
+
+```bash
+-Drdct.diagnostic.frontend.xmx.mb=2048
+```
+
+The value is interpreted as a positive integer number of MiB. On frontend startup, the plugin fetches this backend property and writes the corresponding `-Xmx` value into the JetBrains Client VM options.
+
+This updates the client configuration for the next JetBrains Client start. The current JVM heap size cannot be changed in-place at runtime.
+
 ### Plugin Span Filter Source
 
 `isPluginSpanFilterEnabled` is resolved in this order:
