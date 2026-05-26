@@ -190,7 +190,7 @@ Tracks an active remote development session from start to finish.
 **Ended when:** Session is terminated or connection ends
 
 **Attributes:**
-- `session.id` (string): Unique identifier for the session. Remains the same for frontend and client sessions.
+- `session.id` (string): Remote Development session identifier. In direct RD links it is derived from the backend certificate fingerprint. If the fingerprint is unavailable, the plugin falls back to the remote connection address, for example `tcp://127.0.0.1:5985`.
 
 **Parent:** Root span
 
