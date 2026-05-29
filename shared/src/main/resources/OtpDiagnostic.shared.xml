@@ -7,6 +7,9 @@
         <extensionPoint name="allowedMetricsProvider"
                         interface="com.jetbrains.otp.exporter.AllowedMetricsProvider"
                         dynamic="true"/>
+        <extensionPoint name="metricAttributesProvider"
+                        interface="com.jetbrains.otp.exporter.MetricAttributesProvider"
+                        dynamic="true"/>
         <extensionPoint name="spanProcessorProvider"
                         interface="com.jetbrains.otp.exporter.processor.SpanProcessorProvider"
                         dynamic="true"/>

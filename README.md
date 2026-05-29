@@ -136,6 +136,42 @@ This updates the client configuration for the next JetBrains Client start. The c
 2. Saved plugin setting (`OpenTelemetry Diagnostic` settings UI)
 3. Default: `true`
 
+### Metric Attributes Extension Point
+
+Other plugins can add attributes to all exported metrics by registering:
+
+```xml
+<extensions defaultExtensionNs="com.jetbrains.otp.diagnostic">
+    <metricAttributesProvider implementation="com.example.OtherPluginMetricAttributesProvider"/>
+</extensions>
+```
+
+Use `getStaticAttributes()` for values that are calculated once and cannot change during the process lifetime, for example an `xmx` value.
+
+Use `getDynamicAttributeProviders()` for values that may change but should not be recalculated on every metric export. Each dynamic provider has its own cache key and TTL in seconds.
+
+```kotlin
+class OtherPluginMetricAttributesProvider : MetricAttributesProvider {
+    override fun getStaticAttributes(): Attributes {
+        return Attributes.of(AttributeKey.longKey("jvm.xmx.mb"), maxHeapMb().toLong())
+    }
+
+    override fun getDynamicAttributeProviders(): List<DynamicMetricAttributesProvider> {
+        return listOf(CellMetricAttributesProvider())
+    }
+}
+
+private class CellMetricAttributesProvider : DynamicMetricAttributesProvider {
+    override fun getCacheKey(): String = "cell"
+
+    override fun getCacheTtlSeconds(): Long = 60
+
+    override fun getAttributes(): Attributes {
+        return Attributes.of(AttributeKey.stringKey("cell"), resolveCell())
+    }
+}
+```
+
 ### Frequent Performance Metrics Reporting Source
 
 The feature is intended for diagnostic analysis of transient performance incidents (for example, UI thread freezes or remote connection drops).  
