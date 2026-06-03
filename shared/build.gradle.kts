@@ -4,10 +4,11 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 version = "1.0.20"
 plugins {
     id("intellij-platform-remdev")
+    alias(libs.plugins.rpc)
 }
 dependencies {
     intellijPlatform {
-        create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ij.platform) {
+        create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ijPlatform) {
             useInstaller = true
             useCache = false
         }

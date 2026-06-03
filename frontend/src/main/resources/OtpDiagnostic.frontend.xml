@@ -1,6 +1,9 @@
 <idea-plugin>
     <dependencies>
         <module name="intellij.platform.frontend.split"/>
+        <module name="intellij.rd.client"/>
+        <module name="intellij.rd.client.base"/>
+        <module name="intellij.rd.platform"/>
         <module name="intellij.platform.rpc"/>
         <module name="OtpDiagnostic.shared"/>
     </dependencies>

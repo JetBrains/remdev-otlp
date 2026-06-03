@@ -3,7 +3,7 @@ package com.jetbrains.otp.connection
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.lifetime
 import com.intellij.openapi.startup.ProjectActivity
-import com.jetbrains.thinclient.diagnostics.ThinClientConnectionState
+import com.intellij.platform.frontend.split.connection.diagnostics.ThinClientConnectionState
 import com.jetbrains.thinclient.diagnostics.ThinClientDiagnosticsService
 
 class ConnectionStateListener : ProjectActivity {

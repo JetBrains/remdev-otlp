@@ -1,9 +1,10 @@
 [versions]
-ij-gradle-plugin = "2.13.1"
-ij-rpc-plugin = "2.2.0-0.1"
-ij-kotlin-jvm-plugin = "2.2.0"
-ij-kotlin-serialization-plugin = "2.2.0"
-ij-platform = "2026.1"
+ij-gradle-plugin = "2.16.0"
+ij-rpc-plugin = "2.4.0-RC-0.1"
+ij-kotlin-jvm-plugin = "2.4.0"
+ij-kotlin-serialization-plugin = "2.4.0"
+ijPlatform = "262.6653.22"
+ijPlatformFrontend = "2026.2"
 compose-multiplatform = "1.7.1"
 opentelemetry = "1.48.0"
 opentelemetry-alpha = "1.48.0-alpha"
@@ -18,3 +19,4 @@ opentelemetry-sdk = { module = "io.opentelemetry:opentelemetry-sdk", version.ref
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ij-kotlin-jvm-plugin" }
+rpc = { id = "rpc", version.ref = "ij-rpc-plugin" }

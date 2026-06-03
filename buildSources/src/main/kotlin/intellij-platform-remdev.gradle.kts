@@ -2,7 +2,6 @@ plugins {
     id("org.jetbrains.intellij.platform.module")
     id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("rpc")
 }
 
 repositories {
@@ -34,5 +33,9 @@ tasks {
     withType<JavaCompile> {
         sourceCompatibility = "${SharedDependencies.JAVA_LANGUAGE_VERSION}"
         targetCompatibility = "${SharedDependencies.JAVA_LANGUAGE_VERSION}"
+    }
+
+    withType<Test> {
+        exclude("**/*\$*")
     }
 }
