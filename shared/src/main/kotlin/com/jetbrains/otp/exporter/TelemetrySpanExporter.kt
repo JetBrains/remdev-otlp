@@ -72,6 +72,10 @@ class TelemetrySpanExporter {
             return
         }
 
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Exporting ${spans.size} span(s), trace ids: ${spans.map { it.traceId }.distinct()}")
+        }
+
         try {
             val result = exporter.export(spans)
             result.join(5, TimeUnit.SECONDS)
