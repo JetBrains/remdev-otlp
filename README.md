@@ -98,6 +98,26 @@ The value uses comma-separated `key=value` pairs, so:
 
 In Remote Development mode, these backend-defined attributes are propagated to the frontend together with the rest of the OTLP connection config and are added to every exported span and metric on both sides.
 
+### Global Metric Attributes (optional)
+
+Set this on the backend using either:
+
+Environment variable:
+
+```bash
+export RDCT_COMMON_METRIC_ATTRIBUTES="option1=value1,option2=value2"
+```
+
+Or system property:
+
+```bash
+-Drdct.common.metric.attributes=option1=value1,option2=value2
+```
+
+The value uses the same comma-separated `key=value` format as global span attributes. These attributes are added only to exported metrics. If a metric attribute uses the same key as a global span attribute, the metric-specific value wins for metrics.
+
+In Remote Development mode, these backend-defined metric attributes are propagated to the frontend together with the rest of the OTLP connection config and are added to exported metrics on both sides.
+
 The plugin also automatically adds:
 - `plugin.version`: installed plugin version
 - `idea.version`: IDE product version, for example `2026.1.1`

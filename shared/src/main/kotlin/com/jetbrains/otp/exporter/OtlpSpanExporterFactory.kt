@@ -24,7 +24,8 @@ data class OtlpConfig(
     val timeoutSeconds: Long,
     val isPluginSpanFilterEnabled: Boolean,
     val isMetricsExportEnabled: Boolean,
-    val configuredSpanAttributes: Map<String, String> = emptyMap()
+    val configuredSpanAttributes: Map<String, String> = emptyMap(),
+    val configuredMetricAttributes: Map<String, String> = emptyMap()
 )
 
 object OtlpConfigFactory {
@@ -38,7 +39,8 @@ object OtlpConfigFactory {
             timeoutSeconds = timeoutSeconds,
             isPluginSpanFilterEnabled = OtpDiagnosticSettings.getInstance().pluginFilterEnabledEffective(),
             isMetricsExportEnabled = OtpDiagnosticSettings.getInstance().metricsExportEnabledEffective(),
-            configuredSpanAttributes = readConfiguredSpanAttributesFromPropertyOrEnv()
+            configuredSpanAttributes = readConfiguredSpanAttributesFromPropertyOrEnv(),
+            configuredMetricAttributes = readConfiguredMetricAttributesFromPropertyOrEnv()
         )
     }
 }
@@ -134,6 +136,8 @@ const val FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_ENV =
     "RDCT_DIAGNOSTIC_OTLP_FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED"
 const val COMMON_SPAN_ATTRIBUTES_PROPERTY = "rdct.common.span.attributes"
 const val COMMON_SPAN_ATTRIBUTES_ENV = "RDCT_COMMON_SPAN_ATTRIBUTES"
+const val COMMON_METRIC_ATTRIBUTES_PROPERTY = "rdct.common.metric.attributes"
+const val COMMON_METRIC_ATTRIBUTES_ENV = "RDCT_COMMON_METRIC_ATTRIBUTES"
 
 fun readPluginFilterEnabled(defaultValue: Boolean = true): Boolean {
     return readBooleanFromPropertyOrEnv(
@@ -177,6 +181,16 @@ fun readConfiguredSpanAttributesFromPropertyOrEnv(): Map<String, String> {
     val rawValue = System.getProperty(COMMON_SPAN_ATTRIBUTES_PROPERTY)
         ?: System.getenv(COMMON_SPAN_ATTRIBUTES_ENV)
     return parseOtlpHeaders(rawValue)
+}
+
+fun readConfiguredMetricAttributesFromPropertyOrEnv(): Map<String, String> {
+    val rawValue = System.getProperty(COMMON_METRIC_ATTRIBUTES_PROPERTY)
+        ?: System.getenv(COMMON_METRIC_ATTRIBUTES_ENV)
+    return parseOtlpHeaders(rawValue)
+}
+
+internal fun OtlpConfig.configuredAttributesForMetrics(): Map<String, String> {
+    return configuredSpanAttributes + configuredMetricAttributes
 }
 
 private fun readBooleanFromPropertyOrEnv(propertyName: String, envName: String, defaultValue: Boolean): Boolean {
