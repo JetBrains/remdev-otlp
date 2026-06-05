@@ -14,4 +14,5 @@ data class OtlpRemoteConfig(
     val pluginFilterOverride: Boolean?,
     val metricsExportOverride: Boolean?,
     val frequentPerformanceMetricsReportingOverride: Boolean? = null,
+    val configuredMetricAttributes: Map<String, String> = emptyMap(),
 )
