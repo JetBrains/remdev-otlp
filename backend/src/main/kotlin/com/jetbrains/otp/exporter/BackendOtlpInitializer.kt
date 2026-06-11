@@ -11,6 +11,7 @@ class BackendOtlpInitializer : ProjectActivity {
         CommonSpanAttributesInitializer.initialize(CommonSpanAttributes.SIDE_BACKEND)
         CpuUsageMetricReporter.getInstance().start(CommonSpanAttributes.SIDE_BACKEND)
         FrequentPerformanceMetricsReporter.getInstance().start(CommonSpanAttributes.SIDE_BACKEND)
+        BackendPerformanceStatusReporter.getInstance().start(CommonSpanAttributes.SIDE_BACKEND)
         TelemetrySpanExporter.getInstance().initExporter(config)
         TelemetryMetricExporter.getInstance().initExporter(config)
     }

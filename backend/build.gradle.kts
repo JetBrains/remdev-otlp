@@ -17,6 +17,7 @@ dependencies {
         pluginModule(implementation(project(":shared")))
         bundledModule("intellij.platform.rpc.backend")
         bundledModule("intellij.platform.backend")
+        bundledModule("intellij.rd.platform")
         bundledPlugin("com.jetbrains.remoteDevelopment")
     }
 }
