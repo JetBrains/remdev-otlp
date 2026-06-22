@@ -1,7 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.ProductMode
 
-version = "1.0.21.2"
+version = "1.0.23.2"
 
 plugins {
     id("intellij-platform-remdev")
