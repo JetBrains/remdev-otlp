@@ -32,7 +32,7 @@ class OtpDiagnosticSettings : PersistentStateComponent<OtpDiagnosticSettings.Sta
         var frequentSpansEnabled: Boolean = false,
         var pluginSpanFilterEnabled: Boolean = true,
         var metricsExportEnabled: Boolean = true,
-        var frequentPerformanceMetricsReportingEnabled: Boolean = false,
+        var frequentPerformanceMetricsReportingEnabled: Boolean = true,
     )
 
     override fun getState(): State = state
