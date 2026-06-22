@@ -165,7 +165,7 @@ fun hasMetricsExportOverride(): Boolean {
         || System.getenv(METRICS_EXPORT_ENABLED_ENV) != null
 }
 
-fun readFrequentPerformanceMetricsReportingEnabled(defaultValue: Boolean = false): Boolean {
+fun readFrequentPerformanceMetricsReportingEnabled(defaultValue: Boolean = true): Boolean {
     val rawValue = System.getProperty(FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_PROPERTY)
         ?: System.getenv(FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED_ENV)
         ?: return defaultValue

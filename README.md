@@ -202,7 +202,7 @@ When triggered, it emits high-frequency CPU and memory metrics for the preceding
    - `rdct.diagnostic.otlp.frequent.performance.metrics.reporting.enabled`
    - `RDCT_DIAGNOSTIC_OTLP_FREQUENT_PERFORMANCE_METRICS_REPORTING_ENABLED`
 2. Saved plugin setting (`OpenTelemetry Diagnostic` settings UI)
-3. Default: `false`
+3. Default: `true`
 
 
 ### Filtering Settings UI
