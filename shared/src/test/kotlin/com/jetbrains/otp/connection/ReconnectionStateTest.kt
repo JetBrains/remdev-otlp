@@ -2,6 +2,7 @@ package com.jetbrains.otp.connection
 
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class ReconnectionStateTest {
@@ -193,6 +194,29 @@ class ReconnectionStateTest {
         assertEquals(1, telemetry.reportMetricsCount)
         assertEquals(1, telemetry.startedSpans.size)
         assertEquals(1, telemetry.startedSpans.single().endCount)
+    }
+
+    @Test
+    fun `expected disconnected suppresses reconnect span and metrics`() {
+        val state = state()
+
+        state.connected()
+        state.expectedDisconnected(ExpectedDisconnectReason.USER_DISCONNECT)
+        state.disconnected()
+
+        assertEquals(0, telemetry.reportMetricsCount)
+        assertEquals(0, telemetry.startedSpans.size)
+    }
+
+    @Test
+    fun `expected disconnect tracker expires marked reasons`() {
+        val tracker = ExpectedDisconnectTracker()
+        val beforeMarkMillis = System.currentTimeMillis()
+
+        tracker.mark(ExpectedDisconnectReason.HOST_RESTART, ttlMillis = 10_000L)
+
+        assertEquals(ExpectedDisconnectReason.HOST_RESTART, tracker.currentReason(beforeMarkMillis))
+        assertNull(tracker.currentReason(beforeMarkMillis + 20_000L))
     }
 
     private fun state(

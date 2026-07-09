@@ -39,6 +39,22 @@ class ReconnectionState internal constructor(
     }
 
     @Synchronized
+    fun expectedDisconnected(
+        reason: ExpectedDisconnectReason,
+        context: Map<String, String> = emptyMap(),
+    ) {
+        if (connected == false && reconnectionSpan == null) return
+        connected = false
+
+        reconnectionSpan?.apply {
+            setAttributes(context + (EXPECTED_DISCONNECT_REASON_ATTRIBUTE to reason.attributeValue))
+            end()
+            limiter.onSpanEnded(config)
+        }
+        reconnectionSpan = null
+    }
+
+    @Synchronized
     fun connected(context: Map<String, String> = emptyMap()) {
         if (connected == true) return
         connected = true
@@ -64,6 +80,7 @@ internal data class ReconnectionSpanPermit(
 
 private val GlobalReconnectionSpanLimiter = AdaptiveCooldownReconnectionSpanLimiter()
 private val LOG = Logger.getInstance(ReconnectionState::class.java)
+private const val EXPECTED_DISCONNECT_REASON_ATTRIBUTE = "reconnection.expected.reason"
 
 internal interface ReconnectionTelemetry {
     fun reportMetricsAfterConnectionDrop()
