@@ -13,6 +13,8 @@
     <applicationListeners>
         <listener class="com.jetbrains.otp.connection.OtpWireTransportListener"
                   topic="com.intellij.platform.split.connection.protocol.transport.WireTransportListener"/>
+        <listener class="com.jetbrains.otp.connection.ExpectedDisconnectAppLifecycleListener"
+                  topic="com.intellij.ide.AppLifecycleListener"/>
     </applicationListeners>
 
     <extensions defaultExtensionNs="com.intellij">

@@ -8,6 +8,8 @@
     <applicationListeners>
         <listener topic="com.jetbrains.rdclient.connection.ClientSessionListener"
                   class="com.jetbrains.otp.connection.ClientSessionSpanUpdater"/>
+        <listener topic="com.intellij.ide.AppLifecycleListener"
+                  class="com.jetbrains.otp.connection.ExpectedDisconnectAppLifecycleListener"/>
     </applicationListeners>
 
     <extensions defaultExtensionNs="com.jetbrains.otp.diagnostic">
