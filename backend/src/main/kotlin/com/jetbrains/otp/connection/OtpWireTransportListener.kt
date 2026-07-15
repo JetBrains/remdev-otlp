@@ -58,7 +58,15 @@ class OtpWireTransportListener : WireTransportListener {
                 ExpectedDisconnectReason.CONNECTION_DECLINED,
                 disconnectedContext(clientId, declinedState(lastState)),
             )
-            else -> clientState.disconnected(disconnectedContext(clientId, fallbackState))
+            else -> {
+                val context = disconnectedContext(clientId, fallbackState)
+                val expectedReason = ExpectedDisconnectTracker.getInstance().currentReason()
+                if (expectedReason == null) {
+                    clientState.disconnected(context)
+                } else {
+                    clientState.expectedDisconnected(expectedReason, context)
+                }
+            }
         }
     }
 

@@ -20,11 +20,12 @@ class ConnectionStateListener : ProjectActivity {
         )
         val expectedDisconnectTracker = ExpectedDisconnectTracker.getInstance()
 
-        installExpectedDisconnectMarkers(project, expectedDisconnectTracker)
+        val systemSleepMarker = installExpectedDisconnectMarkers(project, expectedDisconnectTracker)
 
         ThinClientDiagnosticsService.getInstance(project).connectionState.advise(project.lifetime) {
             when (it) {
                 is ThinClientConnectionState.WireNotConnected, is ThinClientConnectionState.NoUiThreadPing -> {
+                    systemSleepMarker.markIfSystemSleepDetected()
                     val expectedReason = expectedDisconnectTracker.currentReason()
                     if (expectedReason == null) {
                         reconnectionState.disconnected()
@@ -43,8 +44,12 @@ class ConnectionStateListener : ProjectActivity {
     private fun installExpectedDisconnectMarkers(
         project: Project,
         expectedDisconnectTracker: ExpectedDisconnectTracker,
-    ) {
+    ): SystemSleepExpectedDisconnectMarker {
         val clientConnectionState = ClientConnectionStateService.getInstance().state
+        val systemSleepMarker = SystemSleepExpectedDisconnectMarker(
+            expectedDisconnectTracker = expectedDisconnectTracker,
+            coroutineScope = getFrontendCoroutineScope(),
+        ).also { it.install() }
 
         val clientConnectionStateJob = clientConnectionState.let { state ->
             getFrontendCoroutineScope().launch {
@@ -64,7 +69,10 @@ class ConnectionStateListener : ProjectActivity {
         project.lifetime.onTermination {
             clientConnectionStateJob?.cancel()
             hostRestartJob.cancel()
+            systemSleepMarker.dispose()
         }
+
+        return systemSleepMarker
     }
 
     private fun ConnectionStateKind.expectedDisconnectReason(): ExpectedDisconnectReason? {

@@ -6,6 +6,7 @@ enum class ExpectedDisconnectReason(val attributeValue: String) {
     HOST_EXIT("host_exit"),
     HOST_RESTART("host_restart"),
     HOST_SESSION_ENDED("host_session_ended"),
+    SYSTEM_SLEEP("system_sleep"),
     TRANSPORT_CLOSED("transport_closed"),
     USER_DISCONNECT("user_disconnect"),
 }

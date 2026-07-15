@@ -25,5 +25,6 @@
         <platform.rpc.backend.remoteApiProvider implementation="com.jetbrains.otp.settings.OtpDiagnosticSettingsApiProvider"/>
         <platform.rpc.backend.remoteApiProvider implementation="com.jetbrains.otp.span.OtpSessionSpanApiProvider"/>
         <platform.rpc.backend.remoteApiProvider implementation="com.jetbrains.otp.crypto.CryptoRpcProvider"/>
+        <platform.rpc.backend.remoteApiProvider implementation="com.jetbrains.otp.connection.ExpectedDisconnectApiProvider"/>
     </extensions>
 </idea-plugin>

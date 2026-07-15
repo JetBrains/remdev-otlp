@@ -11,7 +11,7 @@ class ExpectedDisconnectTracker {
     fun mark(reason: ExpectedDisconnectReason, ttlMillis: Long = DEFAULT_TTL_MILLIS) {
         expectedDisconnect = ExpectedDisconnect(
             reason = reason,
-            validUntilMillis = System.currentTimeMillis() + ttlMillis.coerceAtLeast(0L),
+            validUntilMillis = validUntilMillis(ttlMillis),
         )
     }
 
@@ -35,9 +35,22 @@ class ExpectedDisconnectTracker {
         val validUntilMillis: Long,
     )
 
+    private fun validUntilMillis(ttlMillis: Long): Long {
+        val nowMillis = System.currentTimeMillis()
+        val safeTtlMillis = ttlMillis.coerceAtLeast(0L)
+        return if (Long.MAX_VALUE - nowMillis < safeTtlMillis) {
+            Long.MAX_VALUE
+        } else {
+            nowMillis + safeTtlMillis
+        }
+    }
+
     companion object {
         const val DEFAULT_TTL_MILLIS = 30_000L
         const val SHUTDOWN_TTL_MILLIS = 60_000L
+        const val SYSTEM_SLEEP_TTL_MILLIS = 30 * 60 * 1000L
+        const val REMOTE_SYSTEM_SLEEP_TTL_MILLIS = SYSTEM_SLEEP_TTL_MILLIS
+        const val SYSTEM_WAKE_TTL_MILLIS = 2 * 60 * 1000L
 
         fun getInstance(): ExpectedDisconnectTracker = service()
     }

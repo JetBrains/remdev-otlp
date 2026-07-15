@@ -219,6 +219,37 @@ class ReconnectionStateTest {
         assertNull(tracker.currentReason(beforeMarkMillis + 20_000L))
     }
 
+    @Test
+    fun `expected disconnect tracker expires system sleep marker`() {
+        val tracker = ExpectedDisconnectTracker()
+        val beforeMarkMillis = System.currentTimeMillis()
+
+        tracker.mark(ExpectedDisconnectReason.SYSTEM_SLEEP, ttlMillis = ExpectedDisconnectTracker.SYSTEM_SLEEP_TTL_MILLIS)
+
+        assertEquals(ExpectedDisconnectReason.SYSTEM_SLEEP, tracker.currentReason(beforeMarkMillis))
+        assertNull(tracker.currentReason(beforeMarkMillis + ExpectedDisconnectTracker.SYSTEM_SLEEP_TTL_MILLIS + 1_000L))
+    }
+
+    @Test
+    fun `expected disconnect tracker caps overflowing ttl`() {
+        val tracker = ExpectedDisconnectTracker()
+
+        tracker.mark(ExpectedDisconnectReason.SYSTEM_SLEEP, ttlMillis = Long.MAX_VALUE)
+
+        assertEquals(ExpectedDisconnectReason.SYSTEM_SLEEP, tracker.currentReason(Long.MAX_VALUE - 1))
+    }
+
+    @Test
+    fun `expected disconnect tracker expires system wake marker`() {
+        val tracker = ExpectedDisconnectTracker()
+        val beforeMarkMillis = System.currentTimeMillis()
+
+        tracker.mark(ExpectedDisconnectReason.SYSTEM_SLEEP, ttlMillis = ExpectedDisconnectTracker.SYSTEM_WAKE_TTL_MILLIS)
+
+        assertEquals(ExpectedDisconnectReason.SYSTEM_SLEEP, tracker.currentReason(beforeMarkMillis))
+        assertNull(tracker.currentReason(beforeMarkMillis + ExpectedDisconnectTracker.SYSTEM_WAKE_TTL_MILLIS + 1_000L))
+    }
+
     private fun state(
         baseCooldownMillis: Long = 1_000L,
         maxCooldownMillis: Long = 8_000L,
