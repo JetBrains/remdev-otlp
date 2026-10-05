@@ -332,6 +332,8 @@ When querying your telemetry backend:
 
 ## Building the Plugin
 
+This branch targets IntelliJ IDEA 2026.2 (build `262.*`). Use JDK 25 from Temurin or JetBrains and set `JAVA_HOME` to that installation before building.
+
 To build the plugin distribution:
 
 ```bash

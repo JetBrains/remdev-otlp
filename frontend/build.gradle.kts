@@ -1,7 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.ProductMode
 
-version = "1.0.23.2"
+version = "1.0.24.2"
 plugins {
     id("intellij-platform-remdev")
     alias(libs.plugins.rpc)
@@ -9,7 +9,7 @@ plugins {
 
 dependencies {
     intellijPlatform {
-        create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ijPlatformFrontend) {
+        create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ijPlatform) {
             productMode = ProductMode.FRONTEND
             useCache = false
             useInstaller = true

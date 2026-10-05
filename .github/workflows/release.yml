@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -51,7 +51,7 @@ jobs:
             <plugin id="com.jetbrains.otp.diagnostic"
                     url="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ steps.find_artifact.outputs.artifact_name }}"
                     version="${{ steps.extract_version.outputs.version }}">
-              <idea-version since-build="241.0" until-build="253.*" />
+              <idea-version since-build="262" until-build="262.*" />
               <name>OpenTelemetry Diagnostic</name>
               <description><![CDATA[
                 Advanced diagnostic plugin for IntelliJ Platform with OpenTelemetry integration.
