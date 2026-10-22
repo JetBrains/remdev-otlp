@@ -14,6 +14,7 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import java.nio.file.Path
 import java.time.Instant
+import kotlin.math.roundToInt
 
 @Suppress("UnstableApiUsage")
 class OtpFreezeNotifier : FreezeNotifier {
@@ -49,7 +50,7 @@ class OtpFreezeNotifier : FreezeNotifier {
 
         span.setStatus(StatusCode.ERROR)
 
-        currentDumps.take(4).forEachIndexed { index, dump ->
+        selectFreezeDumps(currentDumps).forEachIndexed { index, dump ->
             val abbreviatedDump = stackTraceAbbreviator.abbreviateStackTraces(dump.rawDump)
             val truncatedDump = stackTraceAbbreviator.truncateToMaxBytes(abbreviatedDump, MAX_THREAD_DUMP_SIZE_BYTES)
             span.setAttribute("thread_dump_$index", truncatedDump)
@@ -62,5 +63,16 @@ class OtpFreezeNotifier : FreezeNotifier {
         val sw = StringWriter()
         throwable.printStackTrace(PrintWriter(sw))
         return stackTraceAbbreviator.abbreviateStackTraces(sw.toString())
+    }
+}
+
+internal fun selectFreezeDumps(dumps: Collection<ThreadDump>): List<ThreadDump> {
+    val maxDumps = 4
+    val orderedDumps = dumps.toList()
+    if (orderedDumps.size <= maxDumps) return orderedDumps
+
+    // The platform supplies dumps in capture order; include both ends of the freeze.
+    return List(maxDumps) { index ->
+        orderedDumps[(index * orderedDumps.lastIndex.toDouble() / (maxDumps - 1)).roundToInt()]
     }
 }
