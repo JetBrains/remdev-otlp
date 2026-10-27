@@ -2,9 +2,10 @@ package com.jetbrains.otp.freeze
 
 import com.intellij.diagnostic.PerformanceListener
 import com.intellij.diagnostic.ThreadDump
-import com.intellij.openapi.util.registry.Registry
+import com.intellij.internal.DebugAttachDetector
 import kotlinx.coroutines.CoroutineScope
 import java.nio.file.Path
+import java.time.Instant
 
 /** Reports freezes when auto-reporting can bypass `FreezeNotifier`. */
 @Suppress("UnstableApiUsage")
@@ -13,23 +14,28 @@ class OtpFreezePerformanceListener : PerformanceListener {
     private var freezeInProgress = false
     private val currentDumps = ArrayList<ThreadDump>()
     private var commonEdtStack: List<StackTraceElement>? = null
+    private var maxDumpDurationMs = 0
+    private var freezeEndTime: Instant? = null
 
     companion object {
         private const val MIN_DUMPS = 2
-        private const val REPORTER_ENABLED_KEY = "freeze.reporter.enabled"
-        private const val DURATION_THRESHOLD_KEY = "freeze.reporter.duration.threshold.seconds"
-        private const val DEFAULT_DURATION_THRESHOLD_SECONDS = 10
 
-        /** Same filters the platform applies before reporting a freeze. */
+        /** Applies report eligibility checks to the dumps exposed by the performance watcher. */
         internal fun shouldReport(
             durationMs: Long,
-            durationThresholdSeconds: Int,
+            settings: FreezeReporterSettings,
             dumpCount: Int,
             commonEdtStack: List<StackTraceElement>?,
         ): Boolean {
-            return (durationMs / 1000).toInt() > durationThresholdSeconds
+            return settings.enabled
+                   && (durationMs / 1000) > settings.durationThresholdSeconds.coerceAtLeast(0)
+                   && settings.maxDumpDurationMs > 0
                    && dumpCount >= MIN_DUMPS
                    && !commonEdtStack.isNullOrEmpty()
+                   && commonEdtStack.none {
+                       it.className == "com.intellij.openapi.application.impl.ApplicationImpl"
+                       && it.methodName == "runEdtProgressWriteAction"
+                   }
         }
 
         /** Frames shared by all EDT dumps, counted from the bottom of the stack. */
@@ -41,17 +47,22 @@ class OtpFreezePerformanceListener : PerformanceListener {
 
             var matching = 0
             while (matching < commonPart.size && matching < edtStack.size
-                   && commonPart[commonPart.size - matching - 1] == edtStack[edtStack.size - matching - 1]) {
+                   && sameFrame(commonPart[commonPart.size - matching - 1], edtStack[edtStack.size - matching - 1])) {
                 matching++
             }
             return commonPart.subList(commonPart.size - matching, commonPart.size)
         }
+
+        private fun sameFrame(first: StackTraceElement, second: StackTraceElement): Boolean =
+            first.className == second.className && first.methodName == second.methodName && first.fileName == second.fileName
     }
 
     override fun uiFreezeStarted(reportDir: Path, coroutineScope: CoroutineScope) {
         synchronized(lock) {
             reset()
-            freezeInProgress = true
+            val settings = FreezeReporterSettings.read()
+            maxDumpDurationMs = settings.maxDumpDurationMs
+            freezeInProgress = !DebugAttachDetector.isAttached() && maxDumpDurationMs > 0
         }
     }
 
@@ -65,18 +76,31 @@ class OtpFreezePerformanceListener : PerformanceListener {
         }
     }
 
+    override fun uiFreezeFinished(durationMs: Long, reportDir: Path?) {
+        synchronized(lock) {
+            if (freezeInProgress) {
+                freezeEndTime = Instant.now()
+            }
+        }
+    }
+
     override fun uiFreezeRecorded(durationMs: Long, reportDir: Path?) {
         val dumps: List<ThreadDump>
         val commonStack: List<StackTraceElement>
+        val endTime: Instant
         synchronized(lock) {
-            val report = freezeInProgress && Registry.`is`(REPORTER_ENABLED_KEY, false) && shouldReport(
+            if (!freezeInProgress) return
+
+            val settings = FreezeReporterSettings.read().copy(maxDumpDurationMs = maxDumpDurationMs)
+            val report = shouldReport(
                 durationMs = durationMs,
-                durationThresholdSeconds = Registry.intValue(DURATION_THRESHOLD_KEY, DEFAULT_DURATION_THRESHOLD_SECONDS),
+                settings = settings,
                 dumpCount = currentDumps.size,
                 commonEdtStack = commonEdtStack,
             )
             dumps = ArrayList(currentDumps)
             commonStack = commonEdtStack.orEmpty()
+            endTime = freezeEndTime ?: Instant.now()
             reset()
             if (!report) return
         }
@@ -87,7 +111,7 @@ class OtpFreezePerformanceListener : PerformanceListener {
             append('\n')
         }
         FreezeReportingService.getInstance().report(reportDir, fromListener = true) {
-            OtpFreezeReporter.reportFreeze(stackTrace, dumps, durationMs)
+            OtpFreezeReporter.reportFreeze(stackTrace, dumps, durationMs, endTime)
         }
     }
 
@@ -95,5 +119,7 @@ class OtpFreezePerformanceListener : PerformanceListener {
         freezeInProgress = false
         currentDumps.clear()
         commonEdtStack = null
+        maxDumpDurationMs = 0
+        freezeEndTime = null
     }
 }
