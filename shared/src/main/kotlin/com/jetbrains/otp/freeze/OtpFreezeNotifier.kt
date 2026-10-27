@@ -6,7 +6,7 @@ import com.intellij.diagnostic.ThreadDump
 import java.nio.file.Path
 import java.time.Instant
 
-/** Exports the platform's analyzed freeze report. */
+/** Uses the platform's analyzed report when auto-reporting is disabled. */
 @Suppress("UnstableApiUsage")
 class OtpFreezeNotifier : FreezeNotifier {
     override fun notifyFreeze(
@@ -18,6 +18,8 @@ class OtpFreezeNotifier : FreezeNotifier {
         val stackTrace = event.throwable.stackTraceToString()
         val dumps = currentDumps.toList()
         val endTime = Instant.now()
-        OtpFreezeReporter.reportFreeze(stackTrace, dumps, durationMs, endTime)
+        FreezeReportingService.getInstance().report(reportDir, fromListener = false) {
+            OtpFreezeReporter.reportFreeze(stackTrace, dumps, durationMs, endTime)
+        }
     }
 }
