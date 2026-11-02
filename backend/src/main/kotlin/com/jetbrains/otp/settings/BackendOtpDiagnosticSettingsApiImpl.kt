@@ -1,9 +1,14 @@
 package com.jetbrains.otp.settings
 
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.util.registry.Registry
 import com.jetbrains.otp.api.OtpDiagnosticSettingsApi
 
 internal class BackendOtpDiagnosticSettingsApiImpl : OtpDiagnosticSettingsApi {
+    override suspend fun getDisablePairedPluginStateEnforcement(): Boolean {
+        return Registry.`is`("plugins.rd.plugin.sync.disable.paired.plugin.state.enforcement", false)
+    }
+
     override suspend fun getFrontendXmxMb(): Int? {
         val rawValue = System.getProperty(BACKEND_FRONTEND_XMX_PROPERTY_NAME)
         return parseFrontendXmxMb(rawValue).also { parsedValue ->

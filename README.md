@@ -135,6 +135,14 @@ The value is interpreted as a positive integer number of MiB. On frontend startu
 
 This updates the client configuration for the next JetBrains Client start. The current JVM heap size cannot be changed in-place at runtime.
 
+### Paired Plugin State Enforcement Sync
+
+On frontend startup, the plugin copies the backend's `plugins.rd.plugin.sync.disable.paired.plugin.state.enforcement` boolean registry value to the JetBrains Client registry. Both `true` and `false` are synchronized, and the client value is updated only when it differs.
+
+Configure the backend through the Registry UI, a JVM option such as `-Dplugins.rd.plugin.sync.disable.paired.plugin.state.enforcement=true`, or `plugins.rd.plugin.sync.disable.paired.plugin.state.enforcement=true` in `idea.properties`. The backend uses IntelliJ's normal registry resolution; JVM options take precedence over `idea.properties`, and saved non-default registry values take precedence over system properties.
+
+If the client has a conflicting system property, synchronization also aligns that property in the running client process so it cannot override the synchronized registry value. This does not edit the client's VM options or properties files.
+
 ### Plugin Span Filter Source
 
 `isPluginSpanFilterEnabled` is resolved in this order:

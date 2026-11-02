@@ -12,6 +12,8 @@ import org.jetbrains.annotations.ApiStatus
 interface OtpDiagnosticSettingsApi : RemoteApi<Unit> {
     suspend fun getFrontendXmxMb(): Int?
 
+    suspend fun getDisablePairedPluginStateEnforcement(): Boolean
+
     suspend fun syncFilteringSettings(
         disabledCategories: Set<String>,
         frequentSpansEnabled: Boolean,

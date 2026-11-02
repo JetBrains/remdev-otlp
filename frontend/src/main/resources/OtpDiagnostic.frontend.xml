@@ -25,6 +25,7 @@
         <postStartupActivity implementation="com.jetbrains.otp.exporter.FrontendPingMetricReporter"/>
         <postStartupActivity implementation="com.jetbrains.otp.connection.ConnectionStateListener"/>
         <postStartupActivity implementation="com.jetbrains.otp.settings.FrontendXmxSyncActivity"/>
+        <postStartupActivity implementation="com.jetbrains.otp.settings.FrontendPairedPluginStateEnforcementSyncActivity"/>
 
         <applicationConfigurable
             parentId="tools"

@@ -1,7 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.ProductMode
 
-version = "1.0.27.2"
+version = "1.0.28.2"
 
 plugins {
     id("intellij-platform-remdev")
@@ -9,6 +9,8 @@ plugins {
 }
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
+
     intellijPlatform {
         create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ijPlatform) {
             productMode = ProductMode.BACKEND
