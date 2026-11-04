@@ -9,7 +9,7 @@ plugins {
 
 dependencies {
     intellijPlatform {
-        create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ijPlatform) {
+        create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.ijPlatformFrontend) {
             productMode = ProductMode.FRONTEND
             useCache = false
             useInstaller = true

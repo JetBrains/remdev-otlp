@@ -32,8 +32,8 @@ val inlineModuleDescriptorsIntoPluginXml by tasks.registering(InlineModuleDescri
 tasks.named<PatchPluginXmlTask>("patchPluginXml") {
     dependsOn(inlineModuleDescriptorsIntoPluginXml)
     inputFile.set(generatedRootPluginXml)
-    sinceBuild.set("262")
-    untilBuild.set("262.*")
+    sinceBuild.set("263")
+    untilBuild.set("263.*")
 }
 
 dependencies {

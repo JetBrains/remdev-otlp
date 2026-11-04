@@ -12,6 +12,7 @@ dependencies {
             useInstaller = true
             useCache = false
         }
+        bundledModule("intellij.platform.rpc")
         testFramework(TestFrameworkType.Platform)
     }
     testImplementation("junit:junit:4.13.2")

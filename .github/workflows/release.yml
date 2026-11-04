@@ -51,7 +51,7 @@ jobs:
             <plugin id="com.jetbrains.otp.diagnostic"
                     url="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ steps.find_artifact.outputs.artifact_name }}"
                     version="${{ steps.extract_version.outputs.version }}">
-              <idea-version since-build="262" until-build="262.*" />
+              <idea-version since-build="263" until-build="263.*" />
               <name>OpenTelemetry Diagnostic</name>
               <description><![CDATA[
                 Advanced diagnostic plugin for IntelliJ Platform with OpenTelemetry integration.
