@@ -4,6 +4,7 @@ import com.intellij.ide.AppLifecycleListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.jetbrains.otp.exporter.TelemetrySpanExporter
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
@@ -12,6 +13,7 @@ import io.opentelemetry.api.trace.SpanContext
 import io.opentelemetry.api.trace.TraceFlags
 import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Scope
+import io.opentelemetry.sdk.trace.ReadableSpan
 
 
 @Suppress("UnstableApiUsage")
@@ -37,7 +39,7 @@ class DefaultRootSpanService : AppLifecycleListener {
         defaultSpan = null
 
         currentScope?.close()
-        currentSpan?.end()
+        endAndExport(currentSpan, wait = false)
 
         currentSpan = TRACER.spanBuilder("remote-dev-session")
             .setNoParent()
@@ -56,7 +58,7 @@ class DefaultRootSpanService : AppLifecycleListener {
     @Synchronized
     fun endSessionSpan() {
         currentScope?.close()
-        currentSpan?.end()
+        endAndExport(currentSpan, wait = false)
         currentSpan = null
         currentScope = null
     }
@@ -90,8 +92,18 @@ class DefaultRootSpanService : AppLifecycleListener {
 
     override fun appWillBeClosed(isRestart: Boolean) {
         currentScope?.close()
-        currentSpan?.end()
+        // The application can still send here; the platform would only flush the root during late shutdown.
+        endAndExport(currentSpan, wait = true)
         defaultSpan?.end()
+    }
+
+    /** Ends [span] and exports it right away instead of leaving it to the platform's span batch. */
+    private fun endAndExport(span: Span?, wait: Boolean) {
+        span ?: return
+        span.end()
+        // Only spans started here carry data; the backend adopts the frontend session as a bare span context.
+        val spanData = (span as? ReadableSpan)?.toSpanData() ?: return
+        TelemetrySpanExporter.getInstance().exportEndedSpan(spanData, wait)
     }
 
     companion object {
