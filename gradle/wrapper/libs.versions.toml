@@ -7,8 +7,8 @@ ijPlatform = "263.7307.112"
 # JetBrains Client is resolved by marketing version only; "2026.3" currently maps to 263.7307.112 (RC)
 ijPlatformFrontend = "2026.3"
 compose-multiplatform = "1.7.1"
-opentelemetry = "1.48.0"
-opentelemetry-alpha = "1.48.0-alpha"
+opentelemetry = "1.66.0"
+opentelemetry-alpha = "1.66.0-alpha"
 
 [libraries]
 intellij-platform-gradle = { module = "org.jetbrains.intellij.platform:intellij-platform-gradle-plugin", version.ref = "ij-gradle-plugin" }
