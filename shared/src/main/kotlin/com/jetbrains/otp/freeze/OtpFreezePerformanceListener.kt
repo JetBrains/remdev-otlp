@@ -1,6 +1,6 @@
 package com.jetbrains.otp.freeze
 
-import com.intellij.diagnostic.PerformanceListener
+import com.intellij.diagnostic.FreezeListener
 import com.intellij.diagnostic.ThreadDump
 import com.intellij.internal.DebugAttachDetector
 import kotlinx.coroutines.CoroutineScope
@@ -9,7 +9,7 @@ import java.time.Instant
 
 /** Reports freezes when auto-reporting can bypass `FreezeNotifier`. */
 @Suppress("UnstableApiUsage")
-class OtpFreezePerformanceListener : PerformanceListener {
+class OtpFreezePerformanceListener : FreezeListener {
     private val lock = Any()
     private var freezeInProgress = false
     private val currentDumps = ArrayList<ThreadDump>()
@@ -57,7 +57,7 @@ class OtpFreezePerformanceListener : PerformanceListener {
             first.className == second.className && first.methodName == second.methodName && first.fileName == second.fileName
     }
 
-    override fun uiFreezeStarted(reportDir: Path, coroutineScope: CoroutineScope) {
+    override suspend fun uiFreezeStarted(reportDir: Path, coroutineScope: CoroutineScope) {
         synchronized(lock) {
             reset()
             val settings = FreezeReporterSettings.read()
@@ -66,7 +66,7 @@ class OtpFreezePerformanceListener : PerformanceListener {
         }
     }
 
-    override fun dumpedThreads(toFile: Path, dump: ThreadDump) {
+    override suspend fun dumpedThreads(toFile: Path, dump: ThreadDump) {
         synchronized(lock) {
             if (!freezeInProgress) return
             currentDumps.add(dump)
@@ -76,7 +76,7 @@ class OtpFreezePerformanceListener : PerformanceListener {
         }
     }
 
-    override fun uiFreezeFinished(durationMs: Long, reportDir: Path?) {
+    override suspend fun uiFreezeFinished(durationMs: Long, reportDir: Path?) {
         synchronized(lock) {
             if (freezeInProgress) {
                 freezeEndTime = Instant.now()
@@ -84,7 +84,7 @@ class OtpFreezePerformanceListener : PerformanceListener {
         }
     }
 
-    override fun uiFreezeRecorded(durationMs: Long, reportDir: Path?) {
+    override suspend fun uiFreezeRecorded(durationMs: Long, reportDir: Path?) {
         val dumps: List<ThreadDump>
         val commonStack: List<StackTraceElement>
         val endTime: Instant
