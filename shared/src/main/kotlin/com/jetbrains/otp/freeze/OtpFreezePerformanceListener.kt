@@ -7,7 +7,10 @@ import kotlinx.coroutines.CoroutineScope
 import java.nio.file.Path
 import java.time.Instant
 
-/** Reports freezes when auto-reporting can bypass `FreezeNotifier`. */
+/**
+ * Reports every eligible UI freeze. Since 263 `FreezeNotifier` only fires for plugin-attributed freezes,
+ * so this listener is the single reporting path regardless of the auto-reporting setting.
+ */
 @Suppress("UnstableApiUsage")
 class OtpFreezePerformanceListener : FreezeListener {
     private val lock = Any()
@@ -110,7 +113,7 @@ class OtpFreezePerformanceListener : FreezeListener {
             commonStack.forEach { frame -> append("\n\tat ").append(frame) }
             append('\n')
         }
-        FreezeReportingService.getInstance().report(reportDir, fromListener = true) {
+        FreezeReportingService.getInstance().report {
             OtpFreezeReporter.reportFreeze(stackTrace, dumps, durationMs, endTime)
         }
     }
